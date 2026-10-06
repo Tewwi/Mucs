@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://bsi8bgh82l20m"]
+
+[ext_resource type="PackedScene" uid="uid://ci5sw85q8hejn" path="res://assets/objs/FBX/CommonTree_1.fbx" id="1_tem7l"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_i84hf"]
+radius = 0.38476563
+height = 4.6289063
+
+[node name="Tree_1" type="StaticBody3D" unique_id=350551771]
+
+[node name="CommonTree_1" parent="." unique_id=278565445 instance=ExtResource("1_tem7l")]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, 0, -0.33178067, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=173543599]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+shape = SubResource("CapsuleShape3D_i84hf")

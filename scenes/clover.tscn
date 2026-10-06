@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://bxfcfjakxr4r1"]
+
+[ext_resource type="PackedScene" uid="uid://f745pt7v7wgg" path="res://assets/objs/FBX/Clover_2.fbx" id="1_u80bc"]
+[ext_resource type="PackedScene" uid="uid://5y8085e3bjch" path="res://assets/objs/FBX/Clover_1.fbx" id="2_r6vo6"]
+
+[node name="Clover" type="Node3D" unique_id=1680835502]
+
+[node name="Clover_2" parent="." unique_id=892669846 instance=ExtResource("1_u80bc")]
+transform = Transform3D(0.5312151, 0, 0.847237, 0, 1, 0, -0.847237, 0, 0.5312151, 0.027447581, 0, 0.22333407)
+
+[node name="Clover_1" parent="." unique_id=509419114 instance=ExtResource("2_r6vo6")]
+transform = Transform3D(0.022733832, 0, 0.99974155, 0, 1, 0, -0.99974155, 0, 0.022733832, 0.07477617, 0, -0.14481473)
+
+[node name="Clover_3" parent="." unique_id=1950381940 instance=ExtResource("1_u80bc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.24013925, -2.3841858e-07, -0.23775858)
