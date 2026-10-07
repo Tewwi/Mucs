@@ -1,0 +1,16 @@
+grass_1.res: Plane_014 (res://meshs/grass_1.res):<ArrayMesh#-9223372010195778095>
+  AABB: [P: (-0.003556, -0.002579, -0.000224), S: (0.006389, 0.007373, 0.013341)]
+  surfaces: 1
+game.scn: (res://scenes/game.scn):<PackedScene#-9223372005565266403>
+Root: Game
+Terrain: Terrain:<MeshInstance3D#31406949901>
+Terrain noise: (res://scenes/game.scn::FastNoiseLite_2oklo):<FastNoiseLite#-9223372005649152488>
+Child: Body, class: StaticBody3D, script: <null>
+Child: StaticBody3D, class: StaticBody3D, script: <null>
+Child: MultiMeshInstance3D, class: MultiMeshInstance3D, script: (res://scripts/grass.gd):<GDScript#-9223372006605453825>
+  grass_mesh: Plane_013 (res://meshs/grass_2.tres):<ArrayMesh#-9223372006722894324>
+  grass_texture: (res://assets/objs/Textures/Grass.png):<CompressedTexture2D#-9223372010346773043>
+  multimesh: (res://scenes/game.scn::MultiMesh_ih0rh):<MultiMesh#-9223372005582043620>
+  min_slope: 0.750000
+  spacing: 1.500000
+  instances after generate: 22508
