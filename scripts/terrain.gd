@@ -1,6 +1,8 @@
 @tool
 extends MeshInstance3D
 
+signal terrain_generated(world_seed: int)
+
 const size := 256.0
 
 ## Khoảng cách lấy mẫu khi tính normal / độ dốc.
@@ -65,69 +67,6 @@ const NORMAL_EPS := 1.0
 ## Bật: mỗi lần chạy game sẽ random seed mới. Tắt: dùng world_seed ở trên.
 @export var randomize_seed_on_start := true
 
-# --- Multi-layer Noise cho Object Spawning ---
-@export_group("Object Spawning")
-
-## Noise riêng cho cây cối (mọc ở vùng phẳng)
-@export var tree_noise: FastNoiseLite
-
-## Ngưỡng spawn cây [0.0 - 1.0]: cao hơn = mọc thưa hơn
-@export_range(0.0, 1.0, 0.05) var tree_threshold := 0.2
-
-## Danh sách các scene của cây để spawn (chọn ngẫu nhiên). Root của scene phải là Node3D.
-@export var tree_scenes: Array[PackedScene] = []
-
-## Độ lệch Y cho cây (giá trị âm giúp cắm ngập nhẹ gốc cây xuống lòng đất, tránh hở chân)
-@export_range(-2.0, 2.0, 0.05) var tree_y_offset: float = -0.3
-
-## Ngưỡng độ phẳng tối thiểu cho cây (slope_factor = normal.y, 1.0 là hoàn toàn phẳng)
-@export_range(0.0, 1.0, 0.01) var tree_min_slope := 0.85
-
-## Số cây tối đa (giới hạn an toàn tránh nghẽn CPU/GPU)
-@export_range(0, 2000, 10) var max_trees := 250
-
-## Noise riêng cho đá (mọc ở vùng dốc)
-@export var rock_noise: FastNoiseLite
-
-## Ngưỡng spawn đá [0.0 - 1.0]
-@export_range(0.0, 1.0, 0.05) var rock_threshold := 0.3
-
-## Danh sách các scene của đá để spawn (chọn ngẫu nhiên). Root của scene phải là Node3D.
-@export var rock_scenes: Array[PackedScene] = []
-
-## Độ lệch Y cho đá / bụi cây
-@export_range(-2.0, 2.0, 0.05) var rock_y_offset: float = -0.1
-
-## Ngưỡng độ phẳng tối đa cho đá (nhỏ hơn ngưỡng này mới mọc, tức là vùng sườn đồi dốc)
-@export_range(0.0, 1.0, 0.01) var rock_max_slope := 0.75
-
-## Số đá tối đa
-@export_range(0, 2000, 10) var max_rocks := 150
-
-## Khoảng cách giữa các điểm thử spawn (units)
-@export_range(4.0, 32.0, 1.0) var spawn_spacing := 8.0
-
-## Độ cao tối thiểu để được spawn (tránh mọc dưới nước / sát bờ biển)
-@export_range(-8.0, 32.0, 0.5) var min_spawn_height := 1.0
-
-## Bật/tắt để spawn thử cây/đá ngay trong Editor
-@export var test_spawn_in_editor: bool = false:
-	set(v):
-		if v:
-			update_mesh()
-			spawn_objects()
-			test_spawn_in_editor = false
-
-## Bật/tắt để xoá sạch object xem trước trong Editor
-@export var clear_spawned_in_editor: bool = false:
-	set(v):
-		if v:
-			_clear_spawned_objects()
-			clear_spawned_in_editor = false
-
-# Danh sách scene hợp lệ (đã lọc null), được dựng một lần mỗi lần spawn
-var _tree_pool: Array[PackedScene] = []
-var _rock_pool: Array[PackedScene] = []
 
 func _enter_tree() -> void:
 	if noise and not noise.changed.is_connected(update_mesh):
@@ -146,15 +85,13 @@ func generate_world(new_seed: int) -> void:
 	world_seed = new_seed
 	_apply_seed_to_noises()
 	update_mesh() # Tự động cập nhật đồng bộ cả mesh lẫn collision
-	spawn_objects()
+	terrain_generated.emit(world_seed)
 
 
 # --- Seed ---
 
 func _apply_seed_to_noises() -> void:
 	_set_noise_seed(noise, world_seed)
-	_set_noise_seed(tree_noise, world_seed + 1)
-	_set_noise_seed(rock_noise, world_seed + 2)
 
 # Đổi seed mà không kích hoạt update_mesh() thêm lần nữa qua signal "changed".
 # Lưu ý: mỗi biến noise nên là một Resource riêng, nếu dùng chung một Resource thì seed sẽ bị ghi đè.
@@ -319,122 +256,3 @@ func update_mesh() -> void:
 	arrays_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, plane_arrays)
 	mesh = arrays_mesh
 	update_collision()
-
-
-# --- Multi-layer Noise Object Spawning ---
-
-## Xóa tất cả object đã spawn trước đó (node con trong group "spawned")
-func _clear_spawned_objects() -> void:
-	for child in get_children():
-		if child.is_in_group("spawned"):
-			remove_child(child) # gỡ ngay để không còn collider "ma" trong frame hiện tại
-			child.queue_free()
-
-## Spawn vật thể theo toạ độ thế giới thực kết hợp Noise.
-## Dùng RandomNumberGenerator riêng theo world_seed => kết quả tái lập được.
-func spawn_objects() -> void:
-	if not noise:
-		push_warning("terrain: noise chưa được gán, bỏ qua spawn_objects()")
-		return
-
-	_clear_spawned_objects()
-
-	_tree_pool = _build_pool(tree_scenes)
-	_rock_pool = _build_pool(rock_scenes)
-
-	var rng := RandomNumberGenerator.new()
-	rng.seed = world_seed
-
-	var half_size := size * 0.5
-	var step := maxf(spawn_spacing, 4.0) # Đảm bảo khoảng cách tối thiểu giữa các vị trí kiểm tra >= 4m
-
-	# 1) Gom toàn bộ điểm ứng viên (lưới + jitter để cây không xếp thành hàng thẳng tắp)
-	var points: Array[Vector2] = []
-	var x := -half_size
-	while x < half_size:
-		var z := -half_size
-		while z < half_size:
-			var px := x + rng.randf_range(-step * 0.3, step * 0.3)
-			var pz := z + rng.randf_range(-step * 0.3, step * 0.3)
-			if absf(px) < half_size and absf(pz) < half_size:
-				points.append(Vector2(px, pz))
-			z += step
-		x += step
-
-	# 2) Xáo trộn để khi chạm giới hạn số lượng, cây/đá vẫn phân bố đều khắp đảo
-	_shuffle_with_rng(points, rng)
-
-	# 3) Duyệt từng điểm và thử spawn
-	var tree_count := 0
-	var rock_count := 0
-	for p in points:
-		if tree_count >= max_trees and rock_count >= max_rocks:
-			break
-		var h := get_height(p.x, p.y)
-		if h < min_spawn_height:
-			continue # dưới nước / sát bờ biển
-		var slope_factor := get_normal(p.x, p.y).y
-		if tree_count < max_trees and _try_spawn_tree(p.x, p.y, h, slope_factor, rng):
-			tree_count += 1
-		elif rock_count < max_rocks and _try_spawn_rock(p.x, p.y, h, slope_factor, rng):
-			rock_count += 1
-
-	print("[Terrain] seed ", world_seed, " | Đã spawn: ", tree_count, " cây | ", rock_count, " đá")
-
-
-func _try_spawn_tree(x: float, z: float, world_height: float, slope_factor: float, rng: RandomNumberGenerator) -> bool:
-	# Cây chỉ mọc ở vùng phẳng (slope_factor >= tree_min_slope) và noise_val vượt ngưỡng
-	if _tree_pool.is_empty() or not tree_noise:
-		return false
-	if slope_factor < tree_min_slope:
-		return false
-	var noise_val: float = (tree_noise.get_noise_2d(x, z) + 1.0) * 0.5 # chuẩn hóa về [0, 1]
-	if noise_val <= tree_threshold:
-		return false
-	var scene := _pick_scene(_tree_pool, rng)
-	return _place_object(scene, Vector3(x, world_height + tree_y_offset, z), rng)
-
-func _try_spawn_rock(x: float, z: float, world_height: float, slope_factor: float, rng: RandomNumberGenerator) -> bool:
-	# Đá mọc ở vùng dốc hơn (slope_factor <= rock_max_slope)
-	if _rock_pool.is_empty() or not rock_noise:
-		return false
-	if slope_factor > rock_max_slope:
-		return false
-	var noise_val: float = (rock_noise.get_noise_2d(x, z) + 1.0) * 0.5
-	if noise_val <= rock_threshold:
-		return false
-	var scene := _pick_scene(_rock_pool, rng)
-	return _place_object(scene, Vector3(x, world_height + rock_y_offset, z), rng)
-
-func _build_pool(scenes: Array[PackedScene]) -> Array[PackedScene]:
-	var pool: Array[PackedScene] = []
-	for s in scenes:
-		if s != null:
-			pool.append(s)
-	return pool
-
-func _pick_scene(pool: Array[PackedScene], rng: RandomNumberGenerator) -> PackedScene:
-	return pool[rng.randi_range(0, pool.size() - 1)]
-
-func _place_object(scene: PackedScene, pos: Vector3, rng: RandomNumberGenerator) -> bool:
-	var inst := scene.instantiate()
-	var obj := inst as Node3D
-	if obj == null:
-		push_warning("terrain: scene spawn phải có root là Node3D")
-		inst.free()
-		return false
-	obj.add_to_group("spawned")
-	add_child(obj)
-	obj.position = pos
-	obj.rotation.y = rng.randf() * TAU
-	var s := rng.randf_range(0.85, 1.25)
-	obj.scale = Vector3(s, s, s)
-	return true
-
-# Fisher-Yates dùng RNG riêng (Array.shuffle() dùng RNG toàn cục nên không tái lập được)
-func _shuffle_with_rng(arr: Array, rng: RandomNumberGenerator) -> void:
-	for i in range(arr.size() - 1, 0, -1):
-		var j := rng.randi_range(0, i)
-		var tmp = arr[i]
-		arr[i] = arr[j]
-		arr[j] = tmp

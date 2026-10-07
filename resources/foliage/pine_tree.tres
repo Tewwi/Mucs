@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="FoliageItemType" format=3 uid="uid://36vrujgbbpqe"]
+
+[ext_resource type="Script" uid="uid://00c35oqp01bb" path="res://scripts/foliage_item_type.gd" id="1_script"]
+[ext_resource type="ArrayMesh" uid="uid://bdklscm5h1omc" path="res://meshs/pine_5.res" id="2_mesh"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pine"]
+radius = 0.513672
+height = 8.72381
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_pine"]
+frequency = 0.02
+
+[resource]
+script = ExtResource("1_script")
+name = "Pine Tree"
+extract_now = null
+mesh = ExtResource("2_mesh")
+collision_shape = SubResource("CapsuleShape3D_pine")
+collision_offset = Vector3(0, 4.36, 0)
+noise = SubResource("FastNoiseLite_pine")
+noise_threshold = 0.25
+y_offset = -0.3
+max_count = 250

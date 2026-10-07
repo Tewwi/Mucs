@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="FoliageItemType" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/foliage_item_type.gd" id="1_script"]
+[ext_resource type="ArrayMesh" uid="uid://xq5e8qtd5ovo" path="res://meshs/tree_1.tres" id="2_mesh"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_broad"]
+height = 7.64
+radius = 0.63
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_broad"]
+frequency = 0.02
+
+[resource]
+script = ExtResource("1_script")
+name = "Broadleaf Tree"
+mesh = ExtResource("2_mesh")
+collision_shape = SubResource("CylinderShape3D_broad")
+collision_offset = Vector3(0.0, 3.58, 0.0)
+noise = SubResource("FastNoiseLite_broad")
+noise_threshold = 0.3
+min_slope = 0.82
+max_slope = 1.0
+min_height = 1.0
+max_height = 128.0
+y_offset = -0.2
+min_scale = 0.85
+max_scale = 1.2
+max_count = 150
