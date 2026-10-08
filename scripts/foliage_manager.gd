@@ -57,8 +57,8 @@ var _multimesh_container: Node3D
 # Node chứa các StaticBody3D trong Pool
 var _pool_container: Node3D
 
-# Danh sách StaticBody3D được tạo sẵn trong pool
-var _collider_pool: Array[StaticBody3D] = []
+# Pool lưu trữ StaticBody3D phân theo từng FoliageItemType (Key: int type_index -> Array[StaticBody3D])
+var _type_pools: Dictionary = {}
 
 # Spatial Grid 2D lưu trữ các vật thể có va chạm:
 # Key: Vector2i(cell_x, cell_z) -> Value: Array[Dictionary]
@@ -146,7 +146,7 @@ func _setup_containers() -> void:
 
 
 func _setup_collider_pool() -> void:
-	_collider_pool.clear()
+	_type_pools.clear()
 
 	# Dọn dẹp pool cũ nếu có
 	for child in _pool_container.get_children():
@@ -155,29 +155,46 @@ func _setup_collider_pool() -> void:
 	if Engine.is_editor_hint():
 		return
 
-	if debug_collision_logs:
-		print("[FoliageManager][Pool] Đang khởi tạo pool %d StaticBody3D proxies..." % max_pooled_colliders)
+	# Lọc các type có cấu hình collision
+	var col_types: Array[int] = []
+	for i in range(foliage_types.size()):
+		var t := foliage_types[i]
+		if t != null and t.collision_shape != null:
+			col_types.append(i)
 
-	# Tạo sẵn số lượng StaticBody3D cố định trong pool
-	for i in range(max_pooled_colliders):
-		var body := StaticBody3D.new()
-		body.name = "ColliderProxy_%d" % i
+	if col_types.is_empty():
+		return
 
-		var col_shape := CollisionShape3D.new()
-		col_shape.name = "Shape"
-		col_shape.disabled = true
-		body.add_child(col_shape)
-
-		# Mặc định tắt va chạm và đặt xa khỏi tầm nhìn
-		body.collision_layer = 0
-		body.collision_mask = 0
-		body.position = Vector3(0, -9999, 0)
-
-		_pool_container.add_child(body)
-		_collider_pool.append(body)
+	# Phân bổ đều số lượng collider cho từng loại (tối thiểu 15, mặc định khoảng 25 mỗi loại)
+	var per_type_count := maxi(15, int(max_pooled_colliders / col_types.size()))
 
 	if debug_collision_logs:
-		print("[FoliageManager][Pool] Khởi tạo hoàn tất %d collider proxies." % _collider_pool.size())
+		print("[FoliageManager][Pool] Đang tạo pool phân theo từng loại: %d loại x %d colliders..." % [col_types.size(), per_type_count])
+
+	for t_idx in col_types:
+		var t := foliage_types[t_idx]
+		_type_pools[t_idx] = []
+
+		for j in range(per_type_count):
+			var body := StaticBody3D.new()
+			body.name = "Collider_%s_%d" % [t.name.validate_node_name(), j]
+
+			var col_shape := CollisionShape3D.new()
+			col_shape.name = "Shape"
+			# GIẢI PHÁP 3: Gán cố định Shape và Offset ngay từ đầu — KHÔNG BAO GIỜ ĐỔI LẠI TRONG RUNTIME
+			col_shape.shape = t.collision_shape
+			col_shape.position = t.collision_offset
+			col_shape.disabled = true
+			body.add_child(col_shape)
+
+			body.collision_layer = 0
+			body.collision_mask = 0
+
+			_pool_container.add_child(body)
+			_type_pools[t_idx].append(body)
+
+	if debug_collision_logs:
+		print("[FoliageManager][Pool] Khởi tạo hoàn tất %d nhóm pool riêng biệt." % _type_pools.size())
 
 
 # --- Tìm kiếm tham chiếu tự động ---
@@ -326,6 +343,7 @@ func generate_foliage(world_seed: int = 0) -> void:
 					_spatial_grid[cell] = []
 				_spatial_grid[cell].append({
 					"transform": trans,
+					"transform_unscaled": Transform3D(rot_basis, pos), # Scale = 1.0 cho Physics
 					"type_index": t_idx,
 					"global_pos": pos
 				})
@@ -413,101 +431,101 @@ func _apply_visibility_range(mmi: MultiMeshInstance3D, type_info: FoliageItemTyp
 
 ## Thu thập các vật thể trong các ô lân cận Player và gán vào Pool
 func _update_proximity_colliders(p_pos: Vector3, center_cell: Vector2i) -> void:
-	if _collider_pool.is_empty():
-		if debug_collision_logs:
-			push_warning("[FoliageManager][Collision] _collider_pool đang rỗng! Chưa khởi tạo pool.")
-		return
+	if _type_pools.is_empty():
+		_setup_collider_pool()
+		if _type_pools.is_empty():
+			return
+
 	if _spatial_grid.is_empty():
-		if debug_collision_logs:
-			print("[FoliageManager][Collision] _spatial_grid đang rỗng (chưa sinh vật thể hoặc không có vật thể nào có collision).")
 		return
 
 	var start_us := Time.get_ticks_usec()
-	var candidate_items: Array[Dictionary] = []
 
-	# Quét các ô xung quanh Player (bán kính active_cell_radius)
+	# Gom các vật thể theo từng type_index
+	var candidates_by_type: Dictionary = {}
+	for t_idx in _type_pools:
+		candidates_by_type[t_idx] = []
+
 	var scanned_cells := 0
+	var total_candidates := 0
+	var player_safe_radius_sq := 1.0 # 1.0m quanh player để tránh đè trúng chân Player
+
+	# Quét các ô xung quanh Player
 	for dx in range(-active_cell_radius, active_cell_radius + 1):
 		for dz in range(-active_cell_radius, active_cell_radius + 1):
 			scanned_cells += 1
 			var cell := center_cell + Vector2i(dx, dz)
 			if _spatial_grid.has(cell):
 				for item in _spatial_grid[cell]:
-					candidate_items.append(item)
+					var t_idx: int = item["type_index"]
+					if not candidates_by_type.has(t_idx):
+						continue
 
-	var total_candidates := candidate_items.size()
+					# GIẢI PHÁP 2: Bỏ qua vật thể quá sát Player để không đè vào chân Player
+					var dist_sq: float = p_pos.distance_squared_to(item["global_pos"])
+					if dist_sq < player_safe_radius_sq:
+						continue
 
-	# Nếu số lượng ứng viên vượt quá pool, sắp xếp theo khoảng cách và lấy những cái gần nhất
-	if candidate_items.size() > max_pooled_colliders:
-		candidate_items.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-			var d_a: float = p_pos.distance_squared_to(a["global_pos"])
-			var d_b: float = p_pos.distance_squared_to(b["global_pos"])
-			return d_a < d_b
-		)
-		candidate_items.resize(max_pooled_colliders)
+					candidates_by_type[t_idx].append(item)
+					total_candidates += 1
 
-	var active_count := candidate_items.size()
+	var total_active := 0
+	var total_disabled := 0
 
-	# Cập nhật các collider đang được dùng
-	var shapes_swapped := 0
-	var transforms_updated := 0
-	for i in range(active_count):
-		var item: Dictionary = candidate_items[i]
-		var t_idx: int = item["type_index"]
-		if t_idx < 0 or t_idx >= foliage_types.size():
-			push_error("[FoliageManager][Collision] type_index không hợp lệ: %d" % t_idx)
-			continue
+	# Cập nhật từng pool theo loại (GIẢI PHÁP 3: Shape giữ nguyên 100%, không swap)
+	for t_idx in _type_pools:
+		var pool: Array = _type_pools[t_idx]
+		var candidates: Array = candidates_by_type.get(t_idx, [])
 
-		var t: FoliageItemType = foliage_types[t_idx]
-		if not t or not t.collision_shape:
-			continue
+		# Sắp xếp lấy những vật thể gần Player nhất
+		if candidates.size() > pool.size():
+			candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+				return p_pos.distance_squared_to(a["global_pos"]) < p_pos.distance_squared_to(b["global_pos"])
+			)
+			candidates.resize(pool.size())
 
-		var body: StaticBody3D = _collider_pool[i]
-		var col_shape: CollisionShape3D = body.get_node_or_null("Shape") as CollisionShape3D
+		var active_for_type := candidates.size()
+		total_active += active_for_type
 
-		if col_shape:
-			# CHỈ gán lại shape khi thực sự thay đổi để tránh PhysicsServer3D rebuild liên tục gây treo
-			if col_shape.shape != t.collision_shape:
-				col_shape.shape = t.collision_shape
-				shapes_swapped += 1
-			if col_shape.position != t.collision_offset:
-				col_shape.position = t.collision_offset
-			if col_shape.disabled:
+		# 1. Kích hoạt các collider cần dùng
+		for i in range(active_for_type):
+			var body: StaticBody3D = pool[i]
+			var item: Dictionary = candidates[i]
+
+			# Dùng transform_unscaled (Scale = 1.0) để triệt tiêu lỗi solver vật lý
+			var target_trans: Transform3D = item.get("transform_unscaled", item["transform"])
+			if body.global_transform != target_trans:
+				body.global_transform = target_trans
+
+			var col_shape: CollisionShape3D = body.get_node_or_null("Shape") as CollisionShape3D
+			if col_shape and col_shape.disabled:
 				col_shape.disabled = false
 
-		if body.global_transform != item["transform"]:
-			body.global_transform = item["transform"]
-			transforms_updated += 1
+			if body.collision_layer != 1:
+				body.collision_layer = 1
+				body.collision_mask = 1
 
-		if body.collision_layer != 1:
-			body.collision_layer = 1
-			body.collision_mask = 1
-
-	# Tắt các collider còn thừa trong pool
-	var disabled_count := 0
-	for i in range(active_count, _collider_pool.size()):
-		var body: StaticBody3D = _collider_pool[i]
-		if body.collision_layer != 0:
-			var col_shape: CollisionShape3D = body.get_node_or_null("Shape") as CollisionShape3D
-			if col_shape and not col_shape.disabled:
-				col_shape.disabled = true
-			body.collision_layer = 0
-			body.collision_mask = 0
-			body.position = Vector3(0, -9999, 0)
-			disabled_count += 1
+		# 2. Tắt các collider còn thừa trong pool của loại này
+		for i in range(active_for_type, pool.size()):
+			var body: StaticBody3D = pool[i]
+			if body.collision_layer != 0:
+				var col_shape: CollisionShape3D = body.get_node_or_null("Shape") as CollisionShape3D
+				if col_shape and not col_shape.disabled:
+					col_shape.disabled = true
+				body.collision_layer = 0
+				body.collision_mask = 0
+				# Lưu ý: Giữ nguyên vị trí cũ, KHÔNG teleport tới -9999
+				total_disabled += 1
 
 	var elapsed_ms := float(Time.get_ticks_usec() - start_us) / 1000.0
 
 	if debug_collision_logs:
-		print("[FoliageManager][Collision] Ô hiện tại: %s | Quét: %d ô (%d vật thể) | Bật: %d/%d (Shape đổi: %d, Pos đổi: %d, Tắt dư: %d) | Thời gian xử lý: %.2f ms" % [
+		print("[FoliageManager][Collision] Ô: %s | Quét: %d ô (%d vật thể) | Bật: %d | Tắt dư: %d | Shape đổi: 0 (Cố định theo Pool) | Xử lý: %.2f ms" % [
 			center_cell,
 			scanned_cells,
 			total_candidates,
-			active_count,
-			max_pooled_colliders,
-			shapes_swapped,
-			transforms_updated,
-			disabled_count,
+			total_active,
+			total_disabled,
 			elapsed_ms
 		])
 
@@ -522,13 +540,13 @@ func _clear_all() -> void:
 		for child in _multimesh_container.get_children():
 			child.queue_free()
 
-	for body in _collider_pool:
-		var col_shape: CollisionShape3D = body.get_node_or_null("Shape") as CollisionShape3D
-		if col_shape:
-			col_shape.disabled = true
-		body.collision_layer = 0
-		body.collision_mask = 0
-		body.position = Vector3(0, -9999, 0)
+	for t_idx in _type_pools:
+		for body: StaticBody3D in _type_pools[t_idx]:
+			var col_shape: CollisionShape3D = body.get_node_or_null("Shape") as CollisionShape3D
+			if col_shape:
+				col_shape.disabled = true
+			body.collision_layer = 0
+			body.collision_mask = 0
 
 
 func _shuffle_points(arr: Array[Vector3], rng: RandomNumberGenerator) -> void:

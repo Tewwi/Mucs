@@ -14,16 +14,11 @@ frequency = 0.02
 [resource]
 script = ExtResource("1_script")
 name = "Pine Tree"
-extract_now = null
 mesh = ExtResource("2_mesh")
-visibility_range_begin = null
-visibility_range_begin_margin = null
 visibility_range_end = 60.0
 visibility_range_end_margin = 9.0
-visibility_range_fade_mode = null
 collision_shape = SubResource("CapsuleShape3D_pine")
 collision_offset = Vector3(0, 4.36, 0)
-align_to_normal = null
 noise = SubResource("FastNoiseLite_pine")
 noise_threshold = 0.25
 y_offset = -0.3
