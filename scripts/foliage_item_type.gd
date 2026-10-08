@@ -27,6 +27,23 @@ extends Resource
 ## Material ghi đè (tùy chọn)
 @export var material_override: Material
 
+@export_group("Visibility Range (LOD / Cull)")
+## Khoảng cách bắt đầu hiển thị (0.0 = từ sát camera)
+@export_range(0.0, 500.0, 1.0) var visibility_range_begin: float = 0.0
+
+## Khoảng đệm mờ dần khi camera lại gần (mét)
+@export_range(0.0, 50.0, 0.5) var visibility_range_begin_margin: float = 0.0
+
+## Khoảng cách tối đa nhìn thấy (0.0 = không giới hạn / luôn hiển thị)
+## Khi đặt > 0 (ví dụ: 60m), các vật thể ở xa hơn khoảng cách này sẽ tự động bị ẩn / fade out để tối ưu GPU
+@export_range(0.0, 500.0, 5.0) var visibility_range_end: float = 0.0
+
+## Khoảng đệm mờ dần khi camera đi ra xa (mét)
+@export_range(0.0, 50.0, 0.5) var visibility_range_end_margin: float = 0.0
+
+## Chế độ Fade: Disabled (tắt phụt), Self (mờ dần đối tượng), Dependencies
+@export var visibility_range_fade_mode: GeometryInstance3D.VisibilityRangeFadeMode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
+
 @export_group("Physics (Collision)")
 ## Shape va chạm (CapsuleShape3D, CylinderShape3D, ConvexPolygonShape3D... tự điền nếu dùng source_scene)
 ## Để trống nếu vật thể này KHÔNG cần va chạm (ví dụ: cỏ, hoa, đá nhỏ).
@@ -34,6 +51,12 @@ extends Resource
 
 ## Độ lệch tâm của CollisionShape3D so với gốc tọa độ của Mesh (tự điền nếu dùng source_scene)
 @export var collision_offset: Vector3 = Vector3.ZERO
+
+@export_group("Orientation & Alignment")
+## Mức độ nghiêng theo mặt phẳng dốc của địa hình [0.0 - 1.0]:
+## 0.0 = luôn đứng thẳng theo trục Y (thích hợp cho cây cối đứng thẳng)
+## 1.0 = áp sát hoàn toàn theo độ nghiêng sườn đồi (thích hợp cho đá, bụi cỏ, sỏi...)
+@export_range(0.0, 1.0, 0.05) var align_to_normal: float = 0.0
 
 @export_group("Spawn Rules")
 ## FastNoiseLite riêng điều khiển mật độ xuất hiện của vật thể này

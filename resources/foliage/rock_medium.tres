@@ -8,20 +8,27 @@ radius = 1.61
 height = 3.22
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_rock"]
+seed = 62
 frequency = 0.025
 
 [resource]
 script = ExtResource("1_script")
 name = "Rock Medium"
 mesh = ExtResource("2_mesh")
+visibility_range_begin = null
+visibility_range_begin_margin = null
+visibility_range_end = 30.0
+visibility_range_end_margin = 9.5
+visibility_range_fade_mode = null
 collision_shape = SubResource("CapsuleShape3D_rock")
 collision_offset = Vector3(0, 0.86, 0)
+align_to_normal = 0.9
 noise = SubResource("FastNoiseLite_rock")
 noise_threshold = 0.35
 min_slope = 0.0
 max_slope = 0.78
 min_height = 0.5
-y_offset = -0.1
+y_offset = -0.4
 min_scale = 0.8
 max_scale = 1.3
 max_count = 150
