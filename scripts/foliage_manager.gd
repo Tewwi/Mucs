@@ -290,7 +290,7 @@ func generate_foliage(world_seed: int = 0) -> void:
 	for p: Vector3 in points:
 		var px: float = p.x
 		var pz: float = p.z
-		var h: float = terrain.get_height(px, pz)
+		var h: float = terrain.get_mesh_height(px, pz) if terrain.has_method("get_mesh_height") else terrain.get_height(px, pz)
 		var norm: Vector3 = terrain.get_normal(px, pz)
 		var slope: float = norm.y
 
@@ -311,17 +311,21 @@ func generate_foliage(world_seed: int = 0) -> void:
 					continue
 
 			# Điểm hợp lệ -> Tạo Transform3D
-			var pos := Vector3(px, h + t.y_offset, pz)
+			var s := rng.randf_range(t.min_scale, t.max_scale)
 			var angle := rng.randf() * TAU
 			var rot_basis := Basis.from_euler(Vector3(0.0, angle, 0.0))
 
 			# Xoay ôm theo pháp tuyến địa hình (normal) nếu được cấu hình (đặc biệt cho đá)
+			var slope_sink := 0.0
 			if t.align_to_normal > 0.001 and norm.length_squared() > 0.001:
 				var target_up := Vector3.UP.slerp(norm, t.align_to_normal).normalized()
 				var tilt := Quaternion(Vector3.UP, target_up)
 				rot_basis = Basis(tilt) * rot_basis
+				# Địa hình dốc và vật thể to -> tự động cắm sâu thêm để mép dưới sườn dốc không bị hở lơ lửng
+				slope_sink = (1.0 - clampf(norm.y, 0.0, 1.0)) * 0.5 * s
 
-			var s := rng.randf_range(t.min_scale, t.max_scale)
+			var final_y := h + (t.y_offset * s) - slope_sink
+			var pos := Vector3(px, final_y, pz)
 			var basis := rot_basis.scaled(Vector3(s, s, s))
 			var trans := Transform3D(basis, pos)
 

@@ -124,6 +124,38 @@ func get_normal(x: float, z: float) -> Vector3:
 	return Vector3(-dh_dx, 1.0, -dh_dz).normalized()
 
 
+## Trả về độ cao bề mặt lưới 3D thực tế (khớp chính xác 100% với mặt phẳng tam giác của PlaneMesh và Jolt Collision)
+func get_mesh_height(px: float, pz: float) -> float:
+	var cell_size := size / float(resolution + 1)
+	var half_size := size * 0.5
+
+	var u := (px + half_size) / cell_size
+	var v := (pz + half_size) / cell_size
+
+	var max_idx := resolution + 1
+	var ix := clampi(int(floor(u)), 0, max_idx - 1)
+	var iz := clampi(int(floor(v)), 0, max_idx - 1)
+
+	var fx := clampf(u - float(ix), 0.0, 1.0)
+	var fz := clampf(v - float(iz), 0.0, 1.0)
+
+	var x0 := -half_size + ix * cell_size
+	var x1 := x0 + cell_size
+	var z0 := -half_size + iz * cell_size
+	var z1 := z0 + cell_size
+
+	var h00 := get_height(x0, z0)
+	var h10 := get_height(x1, z0)
+	var h01 := get_height(x0, z1)
+	var h11 := get_height(x1, z1)
+
+	# PlaneMesh chia mỗi quad thành 2 tam giác theo đường chéo từ (0,0) tới (1,1):
+	if fx >= fz:
+		return h00 + fx * (h10 - h00) + fz * (h11 - h10)
+	else:
+		return h00 + fz * (h01 - h00) + fx * (h11 - h01)
+
+
 # --- Collision (HeightMapShape3D) ---
 
 const TERRAIN_BODY_NAME := "TerrainBody"

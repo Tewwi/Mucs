@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="FoliageItemType" format=3 uid="uid://vl42i3rsfsyu"]
+
+[ext_resource type="Script" uid="uid://00c35oqp01bb" path="res://scripts/foliage_item_type.gd" id="1_ay3dr"]
+
+[resource]
+script = ExtResource("1_ay3dr")
+metadata/_custom_type_script = "uid://00c35oqp01bb"
