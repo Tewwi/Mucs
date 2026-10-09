@@ -67,6 +67,7 @@ var _spatial_grid: Dictionary = {}
 
 # Tọa độ ô lưới gần nhất của Player
 var _last_player_cell := Vector2i(999999, 999999)
+var _last_player_pos := Vector3(999999.0, 999999.0, 999999.0)
 
 # Timer tích lũy để kiểm tra vị trí Player ngắt quãng (tránh check liên tục mỗi frame)
 var _proximity_timer: float = 0.0
@@ -118,11 +119,13 @@ func _physics_process(delta: float) -> void:
 		floori(p_pos.z / cell_size)
 	)
 
-	# Nếu Player vẫn ở trong cùng 1 ô -> Không cần tính toán gì thêm (0% CPU)
-	if curr_cell == _last_player_cell:
+	# Cập nhật khi Player đổi ô lưới HOẶC đã di chuyển được hơn 3 mét
+	var dist_moved_sq := p_pos.distance_squared_to(_last_player_pos)
+	if curr_cell == _last_player_cell and dist_moved_sq < 9.0:
 		return
 
 	_last_player_cell = curr_cell
+	_last_player_pos = p_pos
 	_update_proximity_colliders(p_pos, curr_cell)
 
 
@@ -331,9 +334,14 @@ func generate_foliage(world_seed: int = 0) -> void:
 
 			type_transforms[t_idx].append(trans)
 
+			# Chuyển đổi sang World Space (khớp 100% với vị trí và xoay của Terrain)
+			var world_trans: Transform3D = terrain.global_transform * trans
+			var world_pos: Vector3 = world_trans.origin
+			var world_rot_basis: Basis = terrain.global_transform.basis * rot_basis
+
 			var cell := Vector2i(
-				floori(pos.x / cell_size),
-				floori(pos.z / cell_size)
+				floori(world_pos.x / cell_size),
+				floori(world_pos.z / cell_size)
 			)
 
 			# Gom theo ô lưới để hỗ trợ Visibility Range culling
@@ -341,15 +349,15 @@ func generate_foliage(world_seed: int = 0) -> void:
 				type_cell_transforms[t_idx][cell] = []
 			type_cell_transforms[t_idx][cell].append(trans)
 
-			# Nếu có collision, lưu vào Spatial Grid
+			# Nếu có collision, lưu vào Spatial Grid (tọa độ World Space chuẩn xác)
 			if t.collision_shape != null:
 				if not _spatial_grid.has(cell):
 					_spatial_grid[cell] = []
 				_spatial_grid[cell].append({
-					"transform": trans,
-					"transform_unscaled": Transform3D(rot_basis, pos), # Scale = 1.0 cho Physics
+					"transform": world_trans,
+					"transform_unscaled": Transform3D(world_rot_basis, world_pos),
 					"type_index": t_idx,
-					"global_pos": pos
+					"global_pos": world_pos
 				})
 
 			# Mỗi điểm chỉ mọc 1 loại vật thể
@@ -366,8 +374,9 @@ func generate_foliage(world_seed: int = 0) -> void:
 
 	var gen_elapsed_ms := float(Time.get_ticks_usec() - start_gen_us) / 1000.0
 
-	# Reset player cell để kích hoạt collider ngay lập tức khi xuất hiện
+	# Reset player cell & pos để kích hoạt collider ngay lập tức khi xuất hiện
 	_last_player_cell = Vector2i(999999, 999999)
+	_last_player_pos = Vector3(999999.0, 999999.0, 999999.0)
 
 
 func _create_multimesh_instances_for_type(type_info: FoliageItemType, transforms: Array, type_cell_map: Dictionary, index: int) -> void:
@@ -460,11 +469,6 @@ func _update_proximity_colliders(p_pos: Vector3, center_cell: Vector2i) -> void:
 					if not candidates_by_type.has(t_idx):
 						continue
 
-					# GIẢI PHÁP 2: Bỏ qua vật thể quá sát Player để không đè vào chân Player
-					var dist_sq: float = p_pos.distance_squared_to(item["global_pos"])
-					# if dist_sq < player_safe_radius_sq:
-					# 	continue
-
 					candidates_by_type[t_idx].append(item)
 					total_candidates += 1
 
@@ -491,8 +495,8 @@ func _update_proximity_colliders(p_pos: Vector3, center_cell: Vector2i) -> void:
 			var body: StaticBody3D = pool[i]
 			var item: Dictionary = candidates[i]
 
-			# Dùng transform_unscaled (Scale = 1.0) để triệt tiêu lỗi solver vật lý
-			var target_trans: Transform3D = item.get("transform_unscaled", item["transform"])
+			# Gán World Transform chính xác theo vị trí hiển thị của vật thể
+			var target_trans: Transform3D = item["transform"]
 			if body.global_transform != target_trans:
 				body.global_transform = target_trans
 
@@ -523,6 +527,7 @@ func _update_proximity_colliders(p_pos: Vector3, center_cell: Vector2i) -> void:
 func _clear_all() -> void:
 	_spatial_grid.clear()
 	_last_player_cell = Vector2i(999999, 999999)
+	_last_player_pos = Vector3(999999.0, 999999.0, 999999.0)
 
 	if _multimesh_container:
 		for child in _multimesh_container.get_children():
