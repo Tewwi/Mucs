@@ -25,19 +25,83 @@ const NORMAL_EPS := 1.0
 		if is_node_ready():
 			update_mesh()
 
+## Đường cong phân tầng độ cao (Height / Elevation Curve).
+## Ánh xạ giá trị Noise [0..1] qua đường cong để tạo thềm lục địa, đồng bằng phẳng, vách đá, cao nguyên.
+@export var height_curve: Curve:
+	set(new_curve):
+		if height_curve and height_curve.changed.is_connected(update_mesh):
+			height_curve.changed.disconnect(update_mesh)
+		height_curve = new_curve
+		if height_curve and not height_curve.changed.is_connected(update_mesh):
+			height_curve.changed.connect(update_mesh)
+		if is_node_ready():
+			update_mesh()
+
 @export_range(4.0, 128.0, 4.0) var height := 64.0:
 	set(new_height):
 		height = new_height
 		if is_node_ready():
 			update_mesh()
 
-# --- Hình dạng đảo ---
-@export_group("Island")
+# --- Fall-off Map (Hình dạng đảo & Viền bản đồ) ---
+@export_group("Falloff Map")
 
-## Bán kính đảo (đơn vị thế giới). Ngoài bán kính này là đáy biển phẳng.
+enum FalloffMode {
+	CIRCLE,         ## Hình tròn: đảo tròn theo bán kính island_radius
+	SQUARE,         ## Hình vuông: mép bản đồ 4 cạnh theo kích thước map (size)
+	ROUNDED_SQUARE, ## Hình vuông bo tròn mềm mại
+}
+
+## Bật / tắt hiệu ứng Fall-off map làm dốc địa hình xuống biển
+@export var use_falloff: bool = true:
+	set(v):
+		use_falloff = v
+		if is_node_ready():
+			update_mesh()
+
+## Kiểu dáng viền Fall-off map
+@export var falloff_mode: FalloffMode = FalloffMode.CIRCLE:
+	set(v):
+		falloff_mode = v
+		if is_node_ready():
+			update_mesh()
+
+## Bán kính đảo (đơn vị thế giới, áp dụng cho kiểu Circle hoặc tỷ lệ bán kính)
 @export_range(16.0, 512.0, 1.0) var island_radius := 120.0:
 	set(v):
 		island_radius = v
+		if is_node_ready():
+			update_mesh()
+
+## Tỷ lệ khoảng cách từ tâm bắt đầu hạ độ cao [0..1] (vùng bên trong giữ nguyên 100% độ cao)
+@export_range(0.0, 1.0, 0.05) var falloff_start := 0.2:
+	set(v):
+		falloff_start = v
+		if is_node_ready():
+			update_mesh()
+
+## Độ dốc hạ xuống bờ biển (lũy thừa độ dốc)
+@export_range(0.5, 6.0, 0.1) var falloff_power := 2.5:
+	set(v):
+		falloff_power = v
+		if is_node_ready():
+			update_mesh()
+
+## Độ méo tự nhiên viền bờ biển (dùng noise để bờ đảo lồi lõm tự nhiên, 0 = hình học phẳng chuẩn)
+@export_range(0.0, 0.5, 0.02) var edge_roughness := 0.1:
+	set(v):
+		edge_roughness = v
+		if is_node_ready():
+			update_mesh()
+
+## Curve tùy biến (nếu gán Curve, bạn có thể chỉnh đường cong dốc trực quan trong Godot Inspector)
+@export var falloff_curve: Curve:
+	set(new_curve):
+		if falloff_curve and falloff_curve.changed.is_connected(update_mesh):
+			falloff_curve.changed.disconnect(update_mesh)
+		falloff_curve = new_curve
+		if falloff_curve and not falloff_curve.changed.is_connected(update_mesh):
+			falloff_curve.changed.connect(update_mesh)
 		if is_node_ready():
 			update_mesh()
 
@@ -71,6 +135,10 @@ const NORMAL_EPS := 1.0
 func _enter_tree() -> void:
 	if noise and not noise.changed.is_connected(update_mesh):
 		noise.changed.connect(update_mesh)
+	if height_curve and not height_curve.changed.is_connected(update_mesh):
+		height_curve.changed.connect(update_mesh)
+	if falloff_curve and not falloff_curve.changed.is_connected(update_mesh):
+		falloff_curve.changed.connect(update_mesh)
 
 func _ready() -> void:
 	if Engine.is_editor_hint():
@@ -108,13 +176,54 @@ func _set_noise_seed(n: FastNoiseLite, s: int) -> void:
 
 # --- Hàm địa hình cơ bản ---
 
-## Độ cao tại toạ độ cục bộ (x, z): noise [0..1] * height * mask đảo, rìa chìm xuống đáy biển.
+## Tính toán hệ số Falloff tại toạ độ (x, z): [1.0 = đất liền nguyên bản, 0.0 = đáy biển ngoài khơi]
+func get_falloff_value(x: float, z: float) -> float:
+	if not use_falloff:
+		return 1.0
+
+	var d: float = 0.0
+	match falloff_mode:
+		FalloffMode.CIRCLE:
+			d = Vector2(x, z).length() / maxf(island_radius, 0.001)
+		FalloffMode.SQUARE:
+			var half_size := size * 0.5
+			d = maxf(absf(x), absf(z)) / maxf(half_size, 0.001)
+		FalloffMode.ROUNDED_SQUARE:
+			var half_size := size * 0.5
+			var nx := absf(x) / maxf(half_size, 0.001)
+			var nz := absf(z) / maxf(half_size, 0.001)
+			d = pow(pow(nx, 4.0) + pow(nz, 4.0), 0.25)
+
+	# Làm méo viền bờ biển tự nhiên theo nhiễu (Domain Perturbation)
+	if edge_roughness > 0.0 and noise:
+		var edge_noise := noise.get_noise_2d(x * 1.5, z * 1.5)
+		d += edge_noise * edge_roughness
+
+	d = clampf(d, 0.0, 1.0)
+
+	# Nếu có Curve tuỳ chỉnh trực quan trong Inspector
+	if falloff_curve:
+		return clampf(falloff_curve.sample_baked(d), 0.0, 1.0)
+
+	# Công thức chuyển tiếp mượt mà mặc định:
+	# Vùng từ 0 -> falloff_start: giữ nguyên 100% độ cao (falloff = 1.0)
+	if d <= falloff_start:
+		return 1.0
+
+	var t := (d - falloff_start) / maxf(1.0 - falloff_start, 0.001)
+	t = clampf(t, 0.0, 1.0)
+	var falloff := 1.0 - pow(t, falloff_power)
+	return clampf(falloff, 0.0, 1.0)
+
+
+## Độ cao tại toạ độ cục bộ (x, z): noise [0..1] * height_curve * height * falloff, rìa chìm xuống đáy biển.
 func get_height(x: float, z: float) -> float:
 	if not noise:
 		return 0.0
 	var n := (noise.get_noise_2d(x, z) + 1.0) * 0.5
-	var d := Vector2(x, z).length() / island_radius
-	var mask := clampf(1.0 - pow(d, 3.0), 0.0, 1.0)
+	if height_curve:
+		n = clampf(height_curve.sample_baked(n), 0.0, 1.0)
+	var mask := get_falloff_value(x, z)
 	return n * height * mask - sea_depth * (1.0 - mask)
 
 

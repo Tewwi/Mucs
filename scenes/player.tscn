@@ -1,14 +1,17 @@
 [gd_scene format=3 uid="uid://ep37g88vvf2p"]
 
-[ext_resource type="Script" uid="uid://dmo3vr6wnwhca" path="res://player.gd" id="1_g2els"]
+[ext_resource type="Script" uid="uid://dmo3vr6wnwhca" path="res://scripts/player.gd" id="1_g2els"]
 [ext_resource type="Texture2D" uid="uid://ph3iaxe2vhrs" path="res://icon.svg" id="2_qhqgy"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_i84hf"]
 radius = 0.51416016
 height = 1.6051025
 
+[sub_resource type="SphereShape3D" id="SphereShape3D_i84hf"]
+
 [node name="CharacterBody3D" type="CharacterBody3D" unique_id=14286615]
 script = ExtResource("1_g2els")
+mouse_sensitivity = 0.003
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1355200794]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
@@ -19,5 +22,13 @@ debug_color = Color(0.054728642, 0.6050697, 0.6625693, 0.41960785)
 transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, 1, 0)
 texture = ExtResource("2_qhqgy")
 
-[node name="Camera3D" type="Camera3D" parent="." unique_id=2144399727]
-transform = Transform3D(1, 0, 0, 0, 0.9607208, 0.27751684, 0, -0.27751684, 0.9607208, 0, 2.152394, 1.8697016)
+[node name="CameraPivot" type="Node3D" parent="." unique_id=1491643358]
+unique_name_in_owner = true
+
+[node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot" unique_id=940066617]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0051478, 0)
+shape = SubResource("SphereShape3D_i84hf")
+spring_length = 5.0
+
+[node name="Camera3D" type="Camera3D" parent="CameraPivot/SpringArm3D" unique_id=2144399727]
+unique_name_in_owner = true

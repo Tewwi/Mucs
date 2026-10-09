@@ -365,11 +365,6 @@ func generate_foliage(world_seed: int = 0) -> void:
 		total_spawned += arr.size()
 
 	var gen_elapsed_ms := float(Time.get_ticks_usec() - start_gen_us) / 1000.0
-	print("[FoliageManager] Đã tạo %d vật thể qua MultiMesh trên %d ô Spatial Grid (Thời gian: %.2f ms)." % [
-		total_spawned,
-		_spatial_grid.size(),
-		gen_elapsed_ms
-	])
 
 	# Reset player cell để kích hoạt collider ngay lập tức khi xuất hiện
 	_last_player_cell = Vector2i(999999, 999999)
@@ -467,8 +462,8 @@ func _update_proximity_colliders(p_pos: Vector3, center_cell: Vector2i) -> void:
 
 					# GIẢI PHÁP 2: Bỏ qua vật thể quá sát Player để không đè vào chân Player
 					var dist_sq: float = p_pos.distance_squared_to(item["global_pos"])
-					if dist_sq < player_safe_radius_sq:
-						continue
+					# if dist_sq < player_safe_radius_sq:
+					# 	continue
 
 					candidates_by_type[t_idx].append(item)
 					total_candidates += 1
@@ -522,17 +517,6 @@ func _update_proximity_colliders(p_pos: Vector3, center_cell: Vector2i) -> void:
 				total_disabled += 1
 
 	var elapsed_ms := float(Time.get_ticks_usec() - start_us) / 1000.0
-
-	if debug_collision_logs:
-		print("[FoliageManager][Collision] Ô: %s | Quét: %d ô (%d vật thể) | Bật: %d | Tắt dư: %d | Shape đổi: 0 (Cố định theo Pool) | Xử lý: %.2f ms" % [
-			center_cell,
-			scanned_cells,
-			total_candidates,
-			total_active,
-			total_disabled,
-			elapsed_ms
-		])
-
 
 # --- Dọn dẹp ---
 
