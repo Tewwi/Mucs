@@ -20,6 +20,7 @@ debug_color = Color(0.054728642, 0.6050697, 0.6625693, 0.41960785)
 
 [node name="Sprite3D" type="Sprite3D" parent="." unique_id=941548971]
 transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, 1, 0)
+alpha_cut = 2
 texture = ExtResource("2_qhqgy")
 
 [node name="CameraPivot" type="Node3D" parent="." unique_id=1491643358]

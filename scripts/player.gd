@@ -1,6 +1,6 @@
 extends CharacterBody3D
 
-const JUMP_VELOCITY = 4.5
+@export var JUMP_VELOCITY = 4.5
 
 @export_group("Camera Settings")
 @export var mouse_sensitivity := 0.003
