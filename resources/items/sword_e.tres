@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/sword_E.res" id="1_wqbhb"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_2m2w2"]
+
+[resource]
+script = ExtResource("2_2m2w2")
+item_id = "sword_e"
+item_name = "Trảm Mã Kiếm Claymore"
+description = "Lưỡi kiếm nặng có khả năng chém đôi áo giáp sắt."
+slot_type = 4
+main_mesh = ExtResource("1_wqbhb")
+move_speed_bonus = -0.4
+attack_animation = &"skeleton/Melee_2H_Attack_Slice"
+attack_animations = Array[StringName]([&"skeleton/Melee_2H_Attack_Slice", &"skeleton/Melee_2H_Attack_Spinning", &"skeleton/Melee_2H_Attack_Chop"])
+attack_cooldown = 1.0
+weapon_damage = 42.0

@@ -228,7 +228,6 @@ func _find_player() -> void:
 
 ## Hàm chính: Sinh toàn bộ cây/đá theo seed chỉ định
 func generate_foliage(world_seed: int = 0) -> void:
-	var start_gen_us := Time.get_ticks_usec()
 	_find_references()
 	if not terrain or not terrain.has_method("get_height"):
 		push_warning("FoliageManager: Không tìm thấy node Terrain hợp lệ!")
@@ -337,7 +336,6 @@ func generate_foliage(world_seed: int = 0) -> void:
 			# Chuyển đổi sang World Space (khớp 100% với vị trí và xoay của Terrain)
 			var world_trans: Transform3D = terrain.global_transform * trans
 			var world_pos: Vector3 = world_trans.origin
-			var world_rot_basis: Basis = terrain.global_transform.basis * rot_basis
 
 			var cell := Vector2i(
 				floori(world_pos.x / cell_size),
@@ -355,7 +353,6 @@ func generate_foliage(world_seed: int = 0) -> void:
 					_spatial_grid[cell] = []
 				_spatial_grid[cell].append({
 					"transform": world_trans,
-					"transform_unscaled": Transform3D(world_rot_basis, world_pos),
 					"type_index": t_idx,
 					"global_pos": world_pos
 				})
@@ -367,12 +364,6 @@ func generate_foliage(world_seed: int = 0) -> void:
 	for t_idx in range(valid_types.size()):
 		var t := valid_types[t_idx]
 		_create_multimesh_instances_for_type(t, type_transforms[t_idx], type_cell_transforms[t_idx], t_idx)
-
-	var total_spawned := 0
-	for arr in type_transforms:
-		total_spawned += arr.size()
-
-	var gen_elapsed_ms := float(Time.get_ticks_usec() - start_gen_us) / 1000.0
 
 	# Reset player cell & pos để kích hoạt collider ngay lập tức khi xuất hiện
 	_last_player_cell = Vector2i(999999, 999999)
@@ -447,33 +438,20 @@ func _update_proximity_colliders(p_pos: Vector3, center_cell: Vector2i) -> void:
 	if _spatial_grid.is_empty():
 		return
 
-	var start_us := Time.get_ticks_usec()
-
 	# Gom các vật thể theo từng type_index
 	var candidates_by_type: Dictionary = {}
 	for t_idx in _type_pools:
 		candidates_by_type[t_idx] = []
 
-	var scanned_cells := 0
-	var total_candidates := 0
-	var player_safe_radius_sq := 1.0 # 1.0m quanh player để tránh đè trúng chân Player
-
 	# Quét các ô xung quanh Player
 	for dx in range(-active_cell_radius, active_cell_radius + 1):
 		for dz in range(-active_cell_radius, active_cell_radius + 1):
-			scanned_cells += 1
 			var cell := center_cell + Vector2i(dx, dz)
 			if _spatial_grid.has(cell):
 				for item in _spatial_grid[cell]:
 					var t_idx: int = item["type_index"]
-					if not candidates_by_type.has(t_idx):
-						continue
-
-					candidates_by_type[t_idx].append(item)
-					total_candidates += 1
-
-	var total_active := 0
-	var total_disabled := 0
+					if candidates_by_type.has(t_idx):
+						candidates_by_type[t_idx].append(item)
 
 	# Cập nhật từng pool theo loại (GIẢI PHÁP 3: Shape giữ nguyên 100%, không swap)
 	for t_idx in _type_pools:
@@ -488,7 +466,6 @@ func _update_proximity_colliders(p_pos: Vector3, center_cell: Vector2i) -> void:
 			candidates.resize(pool.size())
 
 		var active_for_type := candidates.size()
-		total_active += active_for_type
 
 		# 1. Kích hoạt các collider cần dùng
 		for i in range(active_for_type):
@@ -517,10 +494,6 @@ func _update_proximity_colliders(p_pos: Vector3, center_cell: Vector2i) -> void:
 					col_shape.disabled = true
 				body.collision_layer = 0
 				body.collision_mask = 0
-				# Lưu ý: Giữ nguyên vị trí cũ, KHÔNG teleport tới -9999
-				total_disabled += 1
-
-	var elapsed_ms := float(Time.get_ticks_usec() - start_us) / 1000.0
 
 # --- Dọn dẹp ---
 

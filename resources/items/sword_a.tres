@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/sword_A.res" id="1_rmreg"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_ndog6"]
+
+[resource]
+script = ExtResource("2_ndog6")
+item_id = "sword_a"
+item_name = "Kiếm Sắt Ngắn"
+description = "Thanh đoản kiếm sắt sắc bén, tốc độ ra đòn linh hoạt."
+slot_type = 4
+main_mesh = ExtResource("1_rmreg")
+attack_animation = &"skeleton/Melee_1H_Attack_Slice_Horizontal"
+attack_animations = Array[StringName]([&"skeleton/Melee_1H_Attack_Slice_Horizontal", &"skeleton/Melee_1H_Attack_Slice_Diagonal", &"skeleton/Melee_1H_Attack_Stab"])
+attack_cooldown = 0.5
+weapon_damage = 18.0

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/hammer_C.res" id="1_gdhw7"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_ku3xn"]
+
+[resource]
+script = ExtResource("2_ku3xn")
+item_id = "hammer_c"
+item_name = "Trọng Búa Hai Tay"
+description = "Búa tạ khổng lồ đập tan mọi chướng ngại vật phía trước."
+slot_type = 4
+main_mesh = ExtResource("1_gdhw7")
+move_speed_bonus = -0.5
+attack_animation = &"skeleton/Melee_2H_Attack_Chop"
+attack_animations = Array[StringName]([&"skeleton/Melee_2H_Attack_Chop", &"skeleton/Melee_2H_Attack_Spin"])
+attack_cooldown = 1.1
+weapon_damage = 45.0

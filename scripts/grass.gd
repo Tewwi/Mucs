@@ -17,7 +17,7 @@ extends Node3D
 
 @export_group("Mesh & Material")
 ## Mesh 3D dùng cho bụi cỏ
-@export var grass_mesh: Mesh = preload("res://meshs/grass_1.tres")
+@export var grass_mesh: Mesh = preload("res://meshs/terran/grass_1.tres")
 
 ## Material ghi đè (tùy chọn)
 @export var material_override: Material

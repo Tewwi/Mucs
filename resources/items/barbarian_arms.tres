@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/barbarian/Barbarian_ArmLeft.res" id="1_dtpde"]
+[ext_resource type="ArrayMesh" path="res://meshs/characters/barbarian/Barbarian_ArmRight.res" id="2_dnw7s"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="3_irvk8"]
+
+[resource]
+script = ExtResource("3_irvk8")
+item_id = "barbarian_arms"
+item_name = "Giáp Tay Barbarian"
+description = "Bao tay da quấn dây bảo vệ cả hai cánh tay trong cận chiến."
+slot_type = 2
+left_mesh = ExtResource("1_dtpde")
+right_mesh = ExtResource("2_dnw7s")
+armor_bonus = 8.0
+health_bonus = 15.0
+attack_cooldown = 0.0
+weapon_damage = 0.0

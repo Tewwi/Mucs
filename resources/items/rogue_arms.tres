@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Rogue/Rogue_ArmLeft.res" id="1_vi8cp"]
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Rogue/Rogue_ArmRight.res" id="2_ulek0"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="3_c0hlb"]
+
+[resource]
+script = ExtResource("3_c0hlb")
+item_id = "rogue_arms"
+item_name = "Găng Tay Đạo Tặc"
+description = "Găng tay da mềm mại giúp thao tác nhanh và chuẩn xác."
+slot_type = 2
+left_mesh = ExtResource("1_vi8cp")
+right_mesh = ExtResource("2_ulek0")
+armor_bonus = 6.0
+health_bonus = 10.0
+move_speed_bonus = 0.2
+attack_cooldown = 0.0
+weapon_damage = 0.0

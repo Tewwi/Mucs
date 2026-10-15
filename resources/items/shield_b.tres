@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/shield_B.res" id="1_ulfgo"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_fi4q4"]
+
+[resource]
+script = ExtResource("2_fi4q4")
+item_id = "shield_b"
+item_name = "Khiên Hiệp Sĩ"
+description = "Khiên sắt hình tam giác che chắn thân mình vững chắc trước tên và giáo."
+slot_type = 4
+main_mesh = ExtResource("1_ulfgo")
+armor_bonus = 25.0
+health_bonus = 35.0
+move_speed_bonus = -0.2
+attack_animation = &"skeleton/Melee_Block"
+attack_animations = Array[StringName]([&"skeleton/Melee_Block", &"skeleton/Melee_Block_Attack"])
+weapon_damage = 8.0

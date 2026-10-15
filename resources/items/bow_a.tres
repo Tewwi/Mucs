@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/bow_A.res" id="1_xn2xq"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_o3qdq"]
+
+[resource]
+script = ExtResource("2_o3qdq")
+item_id = "bow_a"
+item_name = "Cung Gỗ Đi Săn"
+description = "Cung ngắn uốn từ gỗ sồi dẻo dai, bắn nhanh ở cự ly trung bình."
+slot_type = 4
+main_mesh = ExtResource("1_xn2xq")
+move_speed_bonus = 0.2
+attack_animation = &"skeleton/Ranged_Bow_Release"
+attack_animations = Array[StringName]([&"skeleton/Ranged_Bow_Release"])
+weapon_damage = 20.0

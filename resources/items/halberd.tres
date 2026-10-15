@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/halberd.res" id="1_fd0bv"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_xr1jh"]
+
+[resource]
+script = ExtResource("2_xr1jh")
+item_id = "halberd"
+item_name = "Rìu Cán Dài Halberd"
+description = "Vũ khí phối hợp giữa giáo và rìu, đâm và chém cực mạnh ở tầm xa."
+slot_type = 4
+main_mesh = ExtResource("1_fd0bv")
+move_speed_bonus = -0.2
+attack_animation = &"skeleton/Melee_2H_Attack_Stab"
+attack_animations = Array[StringName]([&"skeleton/Melee_2H_Attack_Stab", &"skeleton/Melee_2H_Attack_Slice", &"skeleton/Melee_2H_Attack_Chop"])
+attack_cooldown = 0.85
+weapon_damage = 35.0

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/sword_B.res" id="1_4xtag"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_h5qvi"]
+
+[resource]
+script = ExtResource("2_h5qvi")
+item_id = "sword_b"
+item_name = "Kiếm Dài Hiệp Sĩ"
+description = "Thanh trường kiếm thép có tầm đánh rộng và lực sát thương cân bằng."
+slot_type = 4
+main_mesh = ExtResource("1_4xtag")
+attack_animation = &"skeleton/Melee_1H_Attack_Slice_Diagonal"
+attack_animations = Array[StringName]([&"skeleton/Melee_1H_Attack_Slice_Diagonal", &"skeleton/Melee_1H_Attack_Chop", &"skeleton/Melee_1H_Attack_Slice_Horizontal"])
+weapon_damage = 22.0

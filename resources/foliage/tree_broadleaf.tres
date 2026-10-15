@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="FoliageItemType" format=3 uid="uid://cnvxwv0ruvn1w"]
 
 [ext_resource type="Script" uid="uid://00c35oqp01bb" path="res://scripts/foliage_item_type.gd" id="1_script"]
-[ext_resource type="ArrayMesh" uid="uid://xq5e8qtd5ovo" path="res://meshs/tree_1.tres" id="2_mesh"]
+[ext_resource type="ArrayMesh" uid="uid://xq5e8qtd5ovo" path="res://meshs/terran/tree_1.tres" id="2_mesh"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_broad"]
 height = 7.64

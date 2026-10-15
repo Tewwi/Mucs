@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Mage/Mage_Body.res" id="1_5dsti"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_sdmhf"]
+
+[resource]
+script = ExtResource("2_sdmhf")
+item_id = "mage_body"
+item_name = "Áo Choàng Pháp Sư"
+description = "Bộ pháp phục dệt từ sợi tơ huyền bí bảo vệ khỏi sát thương phép."
+main_mesh = ExtResource("1_5dsti")
+armor_bonus = 12.0
+health_bonus = 50.0
+move_speed_bonus = 0.1
+attack_cooldown = 0.0
+weapon_damage = 0.0

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Rogue/Rogue_LegLeft.res" id="1_82olw"]
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Rogue/Rogue_LegRight.res" id="2_tgmex"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="3_od5vt"]
+
+[resource]
+script = ExtResource("3_od5vt")
+item_id = "rogue_legs"
+item_name = "Quần Giáp Đạo Tặc"
+description = "Quần nhẹ hỗ trợ nhào lộn và di chuyển lén lút."
+slot_type = 3
+left_mesh = ExtResource("1_82olw")
+right_mesh = ExtResource("2_tgmex")
+armor_bonus = 8.0
+health_bonus = 15.0
+move_speed_bonus = 0.4
+attack_cooldown = 0.0
+weapon_damage = 0.0

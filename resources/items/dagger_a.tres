@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/dagger_A.res" id="1_b2ovw"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_tdrm0"]
+
+[resource]
+script = ExtResource("2_tdrm0")
+item_id = "dagger_a"
+item_name = "Dao Găm Đạo Tặc"
+description = "Lưỡi dao ngắn xuất chiêu cực nhanh, chuyên dùng đâm lén."
+slot_type = 4
+main_mesh = ExtResource("1_b2ovw")
+move_speed_bonus = 0.3
+attack_animation = &"skeleton/Melee_1H_Attack_Stab"
+attack_animations = Array[StringName]([&"skeleton/Melee_1H_Attack_Stab", &"skeleton/Melee_1H_Attack_Slice_Horizontal"])
+attack_cooldown = 0.35
+weapon_damage = 12.0

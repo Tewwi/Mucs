@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="EquipmentData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="1_eq"]
+
+[resource]
+script = ExtResource("1_eq")
+item_id = "knight_chest"
+item_name = "Giáp Thân Hiệp Sĩ"
+description = "Bộ áo giáp sắt bảo vệ thân trên của hiệp sĩ."
+slot_type = 1
+armor_bonus = 25.0
+health_bonus = 50.0
+move_speed_bonus = -0.5

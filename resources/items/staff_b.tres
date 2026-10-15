@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/staff_B.res" id="1_i8e23"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_vr2bu"]
+
+[resource]
+script = ExtResource("2_vr2bu")
+item_id = "staff_b"
+item_name = "Pháp Trượng Cổ Đại"
+description = "Trượng quyền năng của đại pháp sư với ngọc ma thuật lơ lửng."
+slot_type = 4
+main_mesh = ExtResource("1_i8e23")
+health_bonus = 40.0
+move_speed_bonus = 0.1
+attack_animation = &"skeleton/Ranged_Magic_Spellcasting"
+attack_animations = Array[StringName]([&"skeleton/Ranged_Magic_Spellcasting", &"skeleton/Ranged_Magic_Shoot"])
+attack_cooldown = 0.85
+weapon_damage = 34.0

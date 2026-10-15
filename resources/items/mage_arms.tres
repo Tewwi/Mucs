@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Mage/Mage_ArmLeft.res" id="1_8poc6"]
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Mage/Mage_ArmRight.res" id="2_a0q4f"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="3_1ra2a"]
+
+[resource]
+script = ExtResource("3_1ra2a")
+item_id = "mage_arms"
+item_name = "Tay Áo Pháp Sư"
+description = "Ống tay áo phù thủy nhẹ nhàng, giúp niệm ấn chú nhanh chóng."
+slot_type = 2
+left_mesh = ExtResource("1_8poc6")
+right_mesh = ExtResource("2_a0q4f")
+armor_bonus = 5.0
+health_bonus = 15.0
+attack_cooldown = 0.0
+weapon_damage = 0.0

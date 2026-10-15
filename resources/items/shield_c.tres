@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/shield_C.res" id="1_5pc27"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_gwfpq"]
+
+[resource]
+script = ExtResource("2_gwfpq")
+item_id = "shield_c"
+item_name = "Đại Khiên Tháp"
+description = "Khiên tháp hạng nặng như một bức tường di động, phòng thủ tuyệt đối."
+slot_type = 4
+main_mesh = ExtResource("1_5pc27")
+armor_bonus = 40.0
+health_bonus = 60.0
+move_speed_bonus = -0.4
+attack_animation = &"skeleton/Melee_Block"
+attack_animations = Array[StringName]([&"skeleton/Melee_Block", &"skeleton/Melee_Block_Hit"])
+attack_cooldown = 0.7
+weapon_damage = 10.0

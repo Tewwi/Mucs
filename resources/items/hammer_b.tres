@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/hammer_B.res" id="1_0bk04"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_7sm56"]
+
+[resource]
+script = ExtResource("2_7sm56")
+item_id = "hammer_b"
+item_name = "Búa Tạ Sắt"
+description = "Khối sắt đặc gắn trên cán gỗ lim, giáng những đòn sấm sét."
+slot_type = 4
+main_mesh = ExtResource("1_0bk04")
+move_speed_bonus = -0.2
+attack_animation = &"skeleton/Melee_1H_Attack_Chop"
+attack_animations = Array[StringName]([&"skeleton/Melee_1H_Attack_Chop", &"skeleton/Melee_1H_Attack_Jump_Chop"])
+attack_cooldown = 0.8
+weapon_damage = 32.0

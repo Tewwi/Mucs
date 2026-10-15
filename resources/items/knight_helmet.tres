@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Knight/Knight_Helmet.res" id="1_r7st1"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_a2xd1"]
+
+[resource]
+script = ExtResource("2_a2xd1")
+item_id = "knight_helmet"
+item_name = "Mũ Sắt Hiệp Sĩ"
+description = "Mũ giáp sắt của hiệp sĩ hoàng gia với khả năng chống va đập tuyệt vời."
+slot_type = 0
+main_mesh = ExtResource("1_r7st1")
+armor_bonus = 15.0
+health_bonus = 30.0
+move_speed_bonus = -0.1
+attack_cooldown = 0.0
+weapon_damage = 0.0

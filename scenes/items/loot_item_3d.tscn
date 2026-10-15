@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://b8y4g7e1k3wqm"]
+
+[ext_resource type="Script" uid="uid://mrti5j25rppc" path="res://scripts/inventory/loot_item_3d.gd" id="1_loot"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_pickup"]
+radius = 1.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_default"]
+size = Vector3(0.35, 0.35, 0.35)
+
+[node name="LootItem3D" type="Area3D"]
+collision_layer = 16
+collision_mask = 2
+script = ExtResource("1_loot")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("SphereShape3D_pickup")
+
+[node name="VisualMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+mesh = SubResource("BoxMesh_default")
+
+[node name="PromptLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+billboard = 1
+double_sided = false
+no_depth_test = true
+text = "[E] Nhặt"
+font_size = 28
+outline_size = 6
+outline_color = Color(0, 0, 0, 1)

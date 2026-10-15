@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Knight/Knight_ArmLeft.res" id="1_yulbh"]
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Knight/Knight_ArmRight.res" id="2_swrij"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="3_13xym"]
+
+[resource]
+script = ExtResource("3_13xym")
+item_id = "knight_arms"
+item_name = "Giáp Tay Hiệp Sĩ"
+description = "Bao tay thép nặng chống đỡ các đòn chém hiểm hóc."
+slot_type = 2
+left_mesh = ExtResource("1_yulbh")
+right_mesh = ExtResource("2_swrij")
+armor_bonus = 12.0
+health_bonus = 20.0
+move_speed_bonus = -0.1
+attack_cooldown = 0.0
+weapon_damage = 0.0

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/bow_B.res" id="1_u2r5i"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_roeys"]
+
+[resource]
+script = ExtResource("2_roeys")
+item_id = "bow_b"
+item_name = "Trường Cung Chiến"
+description = "Cung dài phức hợp lực kéo mạnh mẽ, xuyên phá mục tiêu từ xa."
+slot_type = 4
+main_mesh = ExtResource("1_u2r5i")
+attack_animation = &"skeleton/Ranged_Bow_Release"
+attack_animations = Array[StringName]([&"skeleton/Ranged_Bow_Release"])
+attack_cooldown = 0.85
+weapon_damage = 32.0

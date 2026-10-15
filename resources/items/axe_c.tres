@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/axe_C.res" id="1_jym04"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_bh3u8"]
+
+[resource]
+script = ExtResource("2_bh3u8")
+item_id = "axe_c"
+item_name = "Rìu Đồ Tể"
+description = "Rìu chiến cận chiến chuyên dùng bổ vỡ khiên địch."
+slot_type = 4
+main_mesh = ExtResource("1_jym04")
+move_speed_bonus = -0.1
+attack_animation = &"skeleton/Melee_1H_Attack_Chop"
+attack_animations = Array[StringName]([&"skeleton/Melee_1H_Attack_Chop", &"skeleton/Melee_1H_Attack_Slice_Horizontal"])
+attack_cooldown = 0.7
+weapon_damage = 28.0

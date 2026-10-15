@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Rogue/Rogue_Mask.res" id="1_n4am4"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_27v2c"]
+
+[resource]
+script = ExtResource("2_27v2c")
+item_id = "rogue_mask"
+item_name = "Mặt Nạ Thích Khách"
+description = "Mặt nạ che kín nửa mặt tạo vẻ bí ẩn cho thích khách."
+slot_type = 0
+main_mesh = ExtResource("1_n4am4")
+armor_bonus = 8.0
+health_bonus = 15.0
+move_speed_bonus = 0.2
+attack_cooldown = 0.0
+weapon_damage = 0.0

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/barbarian/Barbarian_LegLeft.res" id="1_7a128"]
+[ext_resource type="ArrayMesh" path="res://meshs/characters/barbarian/Barbarian_LegRight.res" id="2_htbte"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="3_bly78"]
+
+[resource]
+script = ExtResource("3_bly78")
+item_id = "barbarian_legs"
+item_name = "Quần Giáp Barbarian"
+description = "Quần da dã nhân gọn gàng, bảo vệ hai chân khi vượt địa hình hiểm trở."
+slot_type = 3
+left_mesh = ExtResource("1_7a128")
+right_mesh = ExtResource("2_htbte")
+armor_bonus = 10.0
+health_bonus = 20.0
+move_speed_bonus = 0.2
+attack_cooldown = 0.0
+weapon_damage = 0.0

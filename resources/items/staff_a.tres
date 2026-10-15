@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/staff_A.res" id="1_7pkdm"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_iuwug"]
+
+[resource]
+script = ExtResource("2_iuwug")
+item_id = "staff_a"
+item_name = "Gậy Phép Học Tộc"
+description = "Gậy gỗ khảm pha lê tập trung các dòng năng lượng sơ cấp."
+slot_type = 4
+main_mesh = ExtResource("1_7pkdm")
+health_bonus = 20.0
+move_speed_bonus = 0.1
+attack_animation = &"skeleton/Ranged_Magic_Shoot"
+attack_animations = Array[StringName]([&"skeleton/Ranged_Magic_Shoot", &"skeleton/Ranged_Magic_Raise"])
+attack_cooldown = 0.7
+weapon_damage = 22.0

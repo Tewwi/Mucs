@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/axe_B.res" id="1_j27wc"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_dw114"]
+
+[resource]
+script = ExtResource("2_dw114")
+item_id = "axe_b"
+item_name = "Rìu Hai Tay Chiến Binh"
+description = "Rìu chiến hai lưỡi nặng nề, xoay chuyển với sức công phá lớn."
+slot_type = 4
+main_mesh = ExtResource("1_j27wc")
+move_speed_bonus = -0.3
+attack_animation = &"skeleton/Melee_2H_Attack_Chop"
+attack_animations = Array[StringName]([&"skeleton/Melee_2H_Attack_Chop", &"skeleton/Melee_2H_Attack_Spin", &"skeleton/Melee_2H_Attack_Slice"])
+attack_cooldown = 0.95
+weapon_damage = 40.0

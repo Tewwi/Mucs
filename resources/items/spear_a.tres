@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/spear_A.res" id="1_tc3hm"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_724m5"]
+
+[resource]
+script = ExtResource("2_724m5")
+item_id = "spear_a"
+item_name = "Trường Thương Chiến Binh"
+description = "Cây giáo dài mũi thép giữ khoảng cách an toàn và đâm thấu áo giáp."
+slot_type = 4
+main_mesh = ExtResource("1_tc3hm")
+attack_animation = &"skeleton/Melee_2H_Attack_Stab"
+attack_animations = Array[StringName]([&"skeleton/Melee_2H_Attack_Stab", &"skeleton/Melee_1H_Attack_Stab"])
+attack_cooldown = 0.7
+weapon_damage = 26.0

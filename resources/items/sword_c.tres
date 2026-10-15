@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/sword_C.res" id="1_odmwo"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_70cxf"]
+
+[resource]
+script = ExtResource("2_70cxf")
+item_id = "sword_c"
+item_name = "Kiếm Chiến Cận Vệ"
+description = "Vũ khí tiêu chuẩn của cận vệ hoàng cung, lưỡi kiếm dày uy lực."
+slot_type = 4
+main_mesh = ExtResource("1_odmwo")
+armor_bonus = 2.0
+attack_animation = &"skeleton/Melee_1H_Attack_Chop"
+attack_animations = Array[StringName]([&"skeleton/Melee_1H_Attack_Chop", &"skeleton/Melee_1H_Attack_Slice_Horizontal", &"skeleton/Melee_1H_Attack_Jump_Chop"])
+weapon_damage = 25.0

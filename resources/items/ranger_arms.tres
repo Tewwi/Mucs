@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Ranger/Ranger_ArmLeft.res" id="1_xc1rh"]
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Ranger/Ranger_ArmRight.res" id="2_5i12q"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="3_klros"]
+
+[resource]
+script = ExtResource("3_klros")
+item_id = "ranger_arms"
+item_name = "Bao Tay Xạ Thủ"
+description = "Bao tay da trợ lực ngắm bắn và kéo cung bền bỉ."
+slot_type = 2
+left_mesh = ExtResource("1_xc1rh")
+right_mesh = ExtResource("2_5i12q")
+armor_bonus = 7.0
+health_bonus = 15.0
+move_speed_bonus = 0.1
+attack_cooldown = 0.0
+weapon_damage = 0.0

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Knight/Knight_HelmetVisor.res" id="1_r0t84"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_0f4ra"]
+
+[resource]
+script = ExtResource("2_0f4ra")
+item_id = "knight_helmet_visor"
+item_name = "Mũ Hiệp Sĩ Kính Chắn"
+description = "Mũ sắt kín mặt có kính che bảo vệ tối đa cho phần đầu."
+slot_type = 0
+main_mesh = ExtResource("1_r0t84")
+armor_bonus = 18.0
+health_bonus = 35.0
+move_speed_bonus = -0.2
+attack_cooldown = 0.0
+weapon_damage = 0.0

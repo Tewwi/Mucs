@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/dagger_B.res" id="1_bnbef"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_uvwcp"]
+
+[resource]
+script = ExtResource("2_uvwcp")
+item_id = "dagger_b"
+item_name = "Đoản Kiếm Sát Thủ"
+description = "Mũi dao tẩm độc của sát thủ, tỉ lệ chí mạng cao."
+slot_type = 4
+main_mesh = ExtResource("1_bnbef")
+move_speed_bonus = 0.4
+attack_animation = &"skeleton/Melee_1H_Attack_Stab"
+attack_animations = Array[StringName]([&"skeleton/Melee_1H_Attack_Stab", &"skeleton/Melee_1H_Attack_Slice_Diagonal"])
+attack_cooldown = 0.38

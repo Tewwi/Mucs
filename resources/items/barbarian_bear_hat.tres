@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/barbarian/Barbarian_BearHat.res" id="1_74jtf"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_e2wik"]
+
+[resource]
+script = ExtResource("2_e2wik")
+item_id = "barbarian_bear_hat"
+item_name = "Mũ Gấu Barbarian"
+description = "Chiếc mũ làm từ da và đầu gấu hoang dã, tăng khả năng phòng thủ và giữ ấm."
+slot_type = 0
+main_mesh = ExtResource("1_74jtf")
+armor_bonus = 12.0
+health_bonus = 25.0
+attack_cooldown = 0.0
+weapon_damage = 0.0

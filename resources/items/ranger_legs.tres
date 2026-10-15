@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Ranger/Ranger_LegLeft.res" id="1_osytd"]
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Ranger/Ranger_LegRight.res" id="2_ukury"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="3_uut50"]
+
+[resource]
+script = ExtResource("3_uut50")
+item_id = "ranger_legs"
+item_name = "Quần Giáp Xạ Thủ"
+description = "Quần dã chiến bền bỉ giúp chạy nhanh qua bụi rậm."
+slot_type = 3
+left_mesh = ExtResource("1_osytd")
+right_mesh = ExtResource("2_ukury")
+armor_bonus = 9.0
+health_bonus = 20.0
+move_speed_bonus = 0.3
+attack_cooldown = 0.0
+weapon_damage = 0.0

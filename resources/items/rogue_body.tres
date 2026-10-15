@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Rogue/Rogue_Body.res" id="1_6syg6"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_3w2oq"]
+
+[resource]
+script = ExtResource("2_3w2oq")
+item_id = "rogue_body"
+item_name = "Áo Da Đạo Tặc"
+description = "Áo bó sát màu đen hạn chế tối đa tiếng ồn khi di chuyển."
+main_mesh = ExtResource("1_6syg6")
+armor_bonus = 14.0
+health_bonus = 30.0
+move_speed_bonus = 0.4
+attack_cooldown = 0.0
+weapon_damage = 0.0

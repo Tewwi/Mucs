@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/barbarian/Barbarian_Body.res" id="1_r2gsx"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_5s1uu"]
+
+[resource]
+script = ExtResource("2_5s1uu")
+item_id = "barbarian_body"
+item_name = "Giáp Thân Barbarian"
+description = "Áo giáp da dã nhân chắc chắn, tăng sinh lực và độ bền bỉ."
+main_mesh = ExtResource("1_r2gsx")
+armor_bonus = 20.0
+health_bonus = 50.0
+attack_cooldown = 0.0
+weapon_damage = 0.0

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Knight/Knight_LegLeft.res" id="1_fhsfd"]
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Knight/Knight_LegRight.res" id="2_icchl"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="3_obs8s"]
+
+[resource]
+script = ExtResource("3_obs8s")
+item_id = "knight_legs"
+item_name = "Xà Cạp Thép Hiệp Sĩ"
+description = "Giáp bảo vệ hai chân bằng thép rèn nguyên khối."
+slot_type = 3
+left_mesh = ExtResource("1_fhsfd")
+right_mesh = ExtResource("2_icchl")
+armor_bonus = 15.0
+health_bonus = 25.0
+move_speed_bonus = -0.2
+attack_cooldown = 0.0
+weapon_damage = 0.0

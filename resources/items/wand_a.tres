@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/wand_A.res" id="1_vvebx"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_2umb7"]
+
+[resource]
+script = ExtResource("2_2umb7")
+item_id = "wand_a"
+item_name = "Đũa Phép Phù Thủy"
+description = "Đũa phép nhỏ gọn phóng ra các tia sét ma thuật chớp nhoáng."
+slot_type = 4
+main_mesh = ExtResource("1_vvebx")
+health_bonus = 10.0
+move_speed_bonus = 0.3
+attack_animation = &"skeleton/Ranged_Magic_Shoot"
+attack_animations = Array[StringName]([&"skeleton/Ranged_Magic_Shoot"])
+attack_cooldown = 0.45
+weapon_damage = 16.0

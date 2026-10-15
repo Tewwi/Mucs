@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/axe_A.res" id="1_2puvm"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_tyl30"]
+
+[resource]
+script = ExtResource("2_tyl30")
+item_id = "axe_a"
+item_name = "Rìu Chiến Một Tay"
+description = "Lưỡi rìu bén ngót bổ mạnh từ trên xuống."
+slot_type = 4
+main_mesh = ExtResource("1_2puvm")
+attack_animation = &"skeleton/Melee_1H_Attack_Chop"
+attack_animations = Array[StringName]([&"skeleton/Melee_1H_Attack_Chop", &"skeleton/Melee_1H_Attack_Jump_Chop"])
+attack_cooldown = 0.65
+weapon_damage = 24.0

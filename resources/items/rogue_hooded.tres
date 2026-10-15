@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Rogue/Rogue_Hooded.res" id="1_7gint"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_h7eet"]
+
+[resource]
+script = ExtResource("2_h7eet")
+item_id = "rogue_hooded"
+item_name = "Áo Giáp Mũ Trùm Thích Khách"
+description = "Bộ áo đêm có mũ trùm của sát thủ với các đường cắt tối ưu tốc độ."
+main_mesh = ExtResource("1_7gint")
+armor_bonus = 16.0
+health_bonus = 32.0
+move_speed_bonus = 0.5
+attack_cooldown = 0.0
+weapon_damage = 0.0

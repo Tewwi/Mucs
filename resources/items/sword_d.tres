@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/sword_D.res" id="1_rs2sq"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_8udqu"]
+
+[resource]
+script = ExtResource("2_8udqu")
+item_id = "sword_d"
+item_name = "Đại Kiếm Hai Tay"
+description = "Thanh đại kiếm khổng lồ chém nát đội hình đối phương."
+slot_type = 4
+main_mesh = ExtResource("1_rs2sq")
+move_speed_bonus = -0.3
+attack_animation = &"skeleton/Melee_2H_Attack_Chop"
+attack_animations = Array[StringName]([&"skeleton/Melee_2H_Attack_Chop", &"skeleton/Melee_2H_Attack_Slice", &"skeleton/Melee_2H_Attack_Spin"])
+attack_cooldown = 0.9
+weapon_damage = 38.0

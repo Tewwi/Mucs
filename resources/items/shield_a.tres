@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/shield_A.res" id="1_n1obf"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_uw63r"]
+
+[resource]
+script = ExtResource("2_uw63r")
+item_id = "shield_a"
+item_name = "Khiên Gỗ Tròn"
+description = "Khiên gỗ bọc viền sắt cơ bản, gọn gàng và dễ xoay xở."
+slot_type = 4
+main_mesh = ExtResource("1_n1obf")
+armor_bonus = 15.0
+health_bonus = 20.0
+attack_animation = &"skeleton/Melee_Block"
+attack_animations = Array[StringName]([&"skeleton/Melee_Block", &"skeleton/Melee_Block_Attack"])
+attack_cooldown = 0.5
+weapon_damage = 5.0

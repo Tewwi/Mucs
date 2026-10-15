@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Mage/Mage_LegLeft.res" id="1_dr3j1"]
+[ext_resource type="ArrayMesh" path="res://meshs/characters/Mage/Mage_LegRight.res" id="2_xfpv5"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="3_45xld"]
+
+[resource]
+script = ExtResource("3_45xld")
+item_id = "mage_legs"
+item_name = "Quần Pháp Sư"
+description = "Vạt áo chùng và quần dài của học giả phép thuật."
+slot_type = 3
+left_mesh = ExtResource("1_dr3j1")
+right_mesh = ExtResource("2_xfpv5")
+armor_bonus = 6.0
+health_bonus = 20.0
+move_speed_bonus = 0.1
+attack_cooldown = 0.0
+weapon_damage = 0.0

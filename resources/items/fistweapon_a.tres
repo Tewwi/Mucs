@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3]
+
+[ext_resource type="ArrayMesh" path="res://meshs/equipments/fistweapon_A.res" id="1_gmh7v"]
+[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_s414i"]
+
+[resource]
+script = ExtResource("2_s414i")
+item_id = "fistweapon_a"
+item_name = "Vuốt Sắt Chiến Đấu"
+description = "Móng vuốt sắt gắn trên mu bàn tay cho các võ sĩ cự ly siêu gần."
+slot_type = 4
+main_mesh = ExtResource("1_gmh7v")
+move_speed_bonus = 0.3
+attack_animation = &"skeleton/Melee_Unarmed_Attack_Punch_A"
+attack_animations = Array[StringName]([&"skeleton/Melee_Unarmed_Attack_Punch_A", &"skeleton/Melee_Unarmed_Attack_Kick"])
+attack_cooldown = 0.4
+weapon_damage = 14.0
