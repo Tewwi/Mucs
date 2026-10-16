@@ -1,6 +1,6 @@
 extends SceneTree
 
-const JSON_PATH := "res://resources/items/equipment_database.json"
+const JSON_PATH := "res://docs/equipment_database.json"
 const TARGET_DIR := "res://resources/items"
 
 func _init() -> void:
@@ -31,7 +31,9 @@ func _init() -> void:
 		"CHEST": EquipmentData.Slot.CHEST,
 		"ARMS": EquipmentData.Slot.ARMS,
 		"LEGS": EquipmentData.Slot.LEGS,
-		"WEAPON": EquipmentData.Slot.WEAPON
+		"RIGHT_HAND": EquipmentData.Slot.RIGHT_HAND,
+		"LEFT_HAND": EquipmentData.Slot.LEFT_HAND,
+		"WEAPON": EquipmentData.Slot.RIGHT_HAND
 	}
 	
 	var total_created := 0
@@ -42,7 +44,11 @@ func _init() -> void:
 		item.description = item_dict.get("description", "")
 		
 		var slot_str: String = item_dict.get("slot_type", "CHEST")
-		item.slot_type = slot_map.get(slot_str, EquipmentData.Slot.CHEST)
+		if item.item_id.begins_with("shield"):
+			item.slot_type = EquipmentData.Slot.LEFT_HAND
+		else:
+			item.slot_type = slot_map.get(slot_str, EquipmentData.Slot.CHEST)
+
 		
 		var main_mesh_path: String = item_dict.get("main_mesh", "")
 		if main_mesh_path != "" and ResourceLoader.exists(main_mesh_path):

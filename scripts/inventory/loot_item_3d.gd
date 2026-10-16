@@ -8,27 +8,53 @@ extends Area3D
 		item_data = value
 		_update_visuals()
 
+@export_group("Position & Centering")
+## Tự động tính toán AABB để đưa trọng tâm vật thể về đúng giữa Area3D (hết bị lơ lửng trên trời)
+@export var auto_center_mesh: bool = true:
+	set(value):
+		auto_center_mesh = value
+		_update_visuals()
+
+## Độ cao lơ lửng của vật phẩm so với tâm Area3D
+@export var float_height: float = 0.4:
+	set(value):
+		float_height = value
+		_update_visuals()
+
+## Tùy chỉnh vị trí thủ công (X, Y, Z) nếu muốn dịch chuyển thêm lên/xuống/ngang
+@export var mesh_offset: Vector3 = Vector3.ZERO:
+	set(value):
+		mesh_offset = value
+		_update_visuals()
+
+## Góc xoay cố định ban đầu của vật thể (độ)
+@export var mesh_rotation_degrees: Vector3 = Vector3.ZERO:
+	set(value):
+		mesh_rotation_degrees = value
+		_update_visuals()
+
+## Tỷ lệ phóng to / thu nhỏ vật thể khi nằm dưới đất
+@export var mesh_scale: Vector3 = Vector3.ONE:
+	set(value):
+		mesh_scale = value
+		_update_visuals()
+
 @export_group("Animation & Visuals")
 @export var rotate_speed: float = 2.0
 @export var bob_amplitude: float = 0.08
 @export var bob_frequency: float = 2.5
 
 
-@onready var visual_mesh: MeshInstance3D = $VisualMesh
+@onready var visual_pivot: Node3D = $VisualPivot if has_node("VisualPivot") else null
+@onready var visual_mesh: MeshInstance3D = $VisualPivot/VisualMesh if has_node("VisualPivot/VisualMesh") else get_node_or_null("VisualMesh")
 @onready var prompt_label: Label3D = $PromptLabel
 
 var _player_in_range: Node3D = null
-var _base_y: float = 0.0
 var _time_passed: float = 0.0
 
 
 func _ready() -> void:
-	if not visual_mesh:
-		visual_mesh = get_node_or_null("VisualMesh")
-	if not prompt_label:
-		prompt_label = get_node_or_null("PromptLabel")
-		
-	_base_y = visual_mesh.position.y if visual_mesh else 0.4
+	_ensure_nodes()
 	_update_visuals()
 	
 	if Engine.is_editor_hint():
@@ -38,8 +64,10 @@ func _ready() -> void:
 	collision_layer = 16 # Layer 5: Items
 	collision_mask = 2 # Layer 2: Player (đã khai báo trong project.godot)
 	
-	body_entered.connect(_on_body_entered)
-	body_exited.connect(_on_body_exited)
+	if not body_entered.is_connected(_on_body_entered):
+		body_entered.connect(_on_body_entered)
+	if not body_exited.is_connected(_on_body_exited):
+		body_exited.connect(_on_body_exited)
 	
 	if prompt_label:
 		prompt_label.visible = false
@@ -51,10 +79,13 @@ func _process(delta: float) -> void:
 		
 	_time_passed += delta
 	
-	# Hiệu ứng xoay và nhấp nhô khi trong game
-	if visual_mesh:
+	# Hiệu ứng xoay và nhấp nhô quanh tâm vật phẩm
+	if visual_pivot:
+		visual_pivot.rotate_y(rotate_speed * delta)
+		visual_pivot.position.y = float_height + sin(_time_passed * bob_frequency) * bob_amplitude
+	elif visual_mesh:
 		visual_mesh.rotate_y(rotate_speed * delta)
-		visual_mesh.position.y = _base_y + sin(_time_passed * bob_frequency) * bob_amplitude
+		visual_mesh.position.y = float_height + sin(_time_passed * bob_frequency) * bob_amplitude
 
 
 
@@ -122,12 +153,22 @@ func _on_picked_up_success() -> void:
 	queue_free()
 
 
-func _update_visuals() -> void:
+func _ensure_nodes() -> void:
+	if not visual_pivot:
+		visual_pivot = get_node_or_null("VisualPivot")
+	
 	if not visual_mesh:
-		visual_mesh = get_node_or_null("VisualMesh")
+		if visual_pivot and visual_pivot.has_node("VisualMesh"):
+			visual_mesh = visual_pivot.get_node("VisualMesh")
+		else:
+			visual_mesh = get_node_or_null("VisualMesh")
+			
 	if not prompt_label:
 		prompt_label = get_node_or_null("PromptLabel")
-		
+
+
+func _update_visuals() -> void:
+	_ensure_nodes()
 	if not visual_mesh:
 		return
 		
@@ -140,7 +181,26 @@ func _update_visuals() -> void:
 		visual_mesh.mesh = box
 		visual_mesh.material_override = null
 		
-	if prompt_label and item_data:
-		var display_name: String = item_data.item_name if item_data.item_name != "" else "Trang bị"
-		prompt_label.text = "[E] Nhặt %s" % display_name
+	# Tự động tính tâm hình học (AABB) của Mesh để đưa về đúng tâm (0, 0, 0)
+	var center_offset := Vector3.ZERO
+	if auto_center_mesh and visual_mesh.mesh:
+		center_offset = -visual_mesh.mesh.get_aabb().get_center()
+		
+	visual_mesh.position = center_offset + mesh_offset
+	visual_mesh.rotation_degrees = mesh_rotation_degrees
+	visual_mesh.scale = mesh_scale
+	
+	if visual_pivot:
+		visual_pivot.position = Vector3(0, float_height, 0)
+	else:
+		visual_mesh.position += Vector3(0, float_height, 0)
+		
+	if prompt_label:
+		prompt_label.position.y = float_height + 0.65
+		if item_data:
+			var display_name: String = item_data.item_name if item_data.item_name != "" else "Trang bị"
+			prompt_label.text = "[E] Nhặt %s" % display_name
+		else:
+			prompt_label.text = "[E] Nhặt"
+
 

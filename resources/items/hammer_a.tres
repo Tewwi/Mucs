@@ -12,6 +12,6 @@ slot_type = 4
 main_mesh = ExtResource("1_hpino")
 move_speed_bonus = -0.1
 attack_animation = &"skeleton/Melee_1H_Attack_Chop"
-attack_animations = Array[StringName]([&"skeleton/Melee_1H_Attack_Chop", &"skeleton/Melee_1H_Attack_Jump_Chop"])
+attack_animations = Array[StringName]([&"skeleton/Melee_1H_Attack_Chop"])
 attack_cooldown = 0.7
 weapon_damage = 25.0

@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="EquipmentData" format=3]
+[gd_resource type="Resource" script_class="EquipmentData" format=3 uid="uid://gxdpaivtv0iy"]
 
-[ext_resource type="ArrayMesh" path="res://meshs/characters/barbarian/Barbarian_BearHat.res" id="1_74jtf"]
-[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_e2wik"]
+[ext_resource type="ArrayMesh" uid="uid://c8hf6w1irfds1" path="res://meshs/characters/barbarian/Barbarian_BearHat.res" id="1_74jtf"]
+[ext_resource type="Script" uid="uid://buld0pyn58g8h" path="res://scripts/inventory/equipment_data.gd" id="2_e2wik"]
 
 [resource]
 script = ExtResource("2_e2wik")

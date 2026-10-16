@@ -8,6 +8,9 @@ extends Node3D
 ## Node Player để theo dõi vị trí và kích hoạt va chạm lân cận (nếu để trống, tự tìm group 'player')
 @export var player: Node3D
 
+## Node CampSpawner để loại trừ cây/đá mọc đè vào khu vực trại (nếu để trống, tự tìm group 'camp_spawner')
+@export var camp_spawner: Node3D
+
 @export_group("Grid & Spatial Partitioning")
 ## Khoảng cách lấy mẫu giữa các điểm kiểm tra spawn trên địa hình (mét)
 @export_range(2.0, 32.0, 0.5) var spawn_spacing: float = 6.0
@@ -208,20 +211,32 @@ func _find_references() -> void:
 		if p is MeshInstance3D and p.has_method("get_height"):
 			terrain = p
 		else:
-			terrain = get_tree().root.find_child("Terrain", true, false) as MeshInstance3D
+			terrain = get_tree().root.find_child("Terran", true, false) as MeshInstance3D
+			if not terrain and is_inside_tree() and get_tree() and get_tree().root:
+				terrain = get_tree().root.find_child("Terrain", true, false) as MeshInstance3D
 
 	if not player or not is_instance_valid(player):
 		_find_player()
 
+	if not camp_spawner or not is_instance_valid(camp_spawner):
+		if is_inside_tree() and get_tree():
+			var sp_nodes := get_tree().get_nodes_in_group("camp_spawner")
+			if not sp_nodes.is_empty():
+				camp_spawner = sp_nodes[0] as Node3D
+			elif get_tree().root:
+				camp_spawner = get_tree().root.find_child("CampSpawner", true, false) as Node3D
+
 
 func _find_player() -> void:
+	if not is_inside_tree() or not get_tree():
+		return
 	var nodes := get_tree().get_nodes_in_group("player")
 	if not nodes.is_empty():
 		player = nodes[0] as Node3D
 		return
 
-	# Thử tìm CharacterBody3D bất kỳ
-	player = get_tree().root.find_child("Player", true, false) as Node3D
+	if get_tree().root:
+		player = get_tree().root.find_child("Player", true, false) as Node3D
 
 
 # --- Sinh Foliage (MultiMesh + Lập chỉ mục Spatial Grid) ---
@@ -232,6 +247,11 @@ func generate_foliage(world_seed: int = 0) -> void:
 	if not terrain or not terrain.has_method("get_height"):
 		push_warning("FoliageManager: Không tìm thấy node Terrain hợp lệ!")
 		return
+
+	# Đảm bảo CampSpawner đã sinh các camp xong để có danh sách vùng cấm
+	if camp_spawner and camp_spawner.has_method("generate_camps") and camp_spawner.has_method("get_camp_positions"):
+		if camp_spawner.get_camp_positions().is_empty():
+			camp_spawner.generate_camps(world_seed)
 
 	_clear_all()
 
@@ -292,6 +312,12 @@ func generate_foliage(world_seed: int = 0) -> void:
 	for p: Vector3 in points:
 		var px: float = p.x
 		var pz: float = p.z
+
+		# Bỏ qua nếu điểm nằm trong khuôn viên của bất kỳ Camp nào
+		if camp_spawner and camp_spawner.has_method("is_point_in_camp"):
+			if camp_spawner.is_point_in_camp(px, pz):
+				continue
+
 		var h: float = terrain.get_mesh_height(px, pz) if terrain.has_method("get_mesh_height") else terrain.get_height(px, pz)
 		var norm: Vector3 = terrain.get_normal(px, pz)
 		var slope: float = norm.y

@@ -18,6 +18,10 @@ extends CharacterBody3D
 
 @export_group("Combat")
 @export var attack_cooldown: float = 0.6
+## Thời gian lấy đà trước khi hitbox bật khi đánh tay không (giây, vd: 0.12)
+@export var default_attack_windup: float = 0.12
+## Thời gian hitbox duy trì gây sát thương khi đánh tay không (giây, vd: 0.22)
+@export var default_attack_duration: float = 0.22
 
 const DEFAULT_UNARMED_ATTACKS: Array[StringName] = [
 	&"skeleton/Melee_Unarmed_Attack_Punch_A",
@@ -26,12 +30,18 @@ const DEFAULT_UNARMED_ATTACKS: Array[StringName] = [
 
 var current_attack_animations: Array[StringName] = DEFAULT_UNARMED_ATTACKS
 
+@export_group("UI")
+@export var player_ui_scene: PackedScene = preload("res://scenes/player_ui.tscn")
+
 var current_armor: float = 0.0
 var current_health: float = 100.0
 var is_attacking: bool = false
 var _attack_timer: float = 0.0
+@export var unarmed_damage: float = 12.0
+var _anim_event_hit_active: bool = false
 
 var _camera_input_dir := Vector2.ZERO
+var player_ui: PlayerUI
 
 @onready var camera_pivot: Node3D = %CameraPivot
 @onready var camera: Camera3D = %Camera3D
@@ -42,10 +52,17 @@ var _camera_input_dir := Vector2.ZERO
 
 func _ready() -> void:
 	add_to_group("player")
+	collision_layer = 2 # Layer 2: Player
+	collision_mask = 1 | 4 # Layer 1: Terrain, Layer 3: Enemy
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
 	current_armor = base_armor
 	current_health = base_max_health
+	
+	player_ui = get_node_or_null("PlayerUI") as PlayerUI
+	if not player_ui and player_ui_scene:
+		player_ui = player_ui_scene.instantiate() as PlayerUI
+		add_child(player_ui)
 	
 	if not equipment_manager:
 		equipment_manager = find_child("EquipmentManager", true, false) as EquipmentManager
@@ -60,15 +77,15 @@ func _ready() -> void:
 		animation_tree.active = true
 		_set_attack_node_animation(current_attack_animations[0])
 		
-	if equipment_manager:
+	if equipment_manager and not equipment_manager.equipment_changed.is_connected(_on_equipment_changed):
 		equipment_manager.equipment_changed.connect(_on_equipment_changed)
 
 func _on_equipment_changed(slot: EquipmentData.Slot, new_item: EquipmentData, _old_item: EquipmentData) -> void:
 	if equipment_manager:
 		current_armor = base_armor + equipment_manager.get_total_armor_bonus()
 		
-	# Khi đổi vũ khí (slot WEAPON)
-	if slot == EquipmentData.Slot.WEAPON:
+	# Khi đổi vũ khí (slot RIGHT_HAND hoặc WEAPON)
+	if slot == EquipmentData.Slot.RIGHT_HAND or slot == EquipmentData.Slot.WEAPON:
 		if new_item:
 			var anims: Array[StringName] = []
 			if new_item.attack_animations.size() > 0:
@@ -87,6 +104,9 @@ func _on_equipment_changed(slot: EquipmentData.Slot, new_item: EquipmentData, _o
 			attack_cooldown = 0.6
 
 func _input(event: InputEvent) -> void:
+	if player_ui and player_ui.is_open():
+		return
+		
 	if event.is_action_pressed("escape_focus"):
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	if event.is_action_pressed("left_click"):
@@ -96,11 +116,12 @@ func _input(event: InputEvent) -> void:
 			attack()
 
 func attack() -> void:
-	if is_attacking or _attack_timer > 0.0:
+	if is_attacking or _attack_timer > 0.0 or current_health <= 0.0:
 		return
 		
 	is_attacking = true
 	_attack_timer = attack_cooldown
+	_anim_event_hit_active = false
 	
 	# Chọn ngẫu nhiên hoặc theo thứ tự đòn đánh trong danh sách đòn của vũ khí hiện tại
 	var chosen_anim: StringName = current_attack_animations.pick_random() if current_attack_animations.size() > 0 else &"skeleton/Melee_Unarmed_Attack_Punch_A"
@@ -118,11 +139,63 @@ func attack() -> void:
 			if animation_tree:
 				animation_tree.set("parameters/conditions/isAttacking", false)
 		)
+
+	# Lấy sát thương vũ khí hiện tại
+	var dmg := get_current_damage()
+
+	# Cơ chế Hybrid: Tự động chạy Hit Window theo nhịp vung kiếm
+	# Lấy thời gian delay lấy đà và thời gian duy trì hitbox từ vũ khí hoặc mặc định
+	var windup_delay := default_attack_windup
+	var active_duration := default_attack_duration
+	if equipment_manager:
+		var w_item := equipment_manager.get_equipped_item(EquipmentData.Slot.RIGHT_HAND)
+		if w_item:
+			windup_delay = w_item.attack_windup_delay
+			active_duration = w_item.attack_active_duration
+	
+	var hit_start_timer := get_tree().create_timer(windup_delay)
+	hit_start_timer.timeout.connect(func():
+		if is_attacking and not _anim_event_hit_active:
+			start_hit_window(dmg)
+	)
+	
+	var hit_end_timer := get_tree().create_timer(windup_delay + active_duration)
+	hit_end_timer.timeout.connect(func():
+		if not _anim_event_hit_active:
+			end_hit_window()
+	)
 	
 	var finish_timer := get_tree().create_timer(attack_cooldown)
 	finish_timer.timeout.connect(func():
 		is_attacking = false
+		end_hit_window()
 	)
+
+
+func get_current_damage() -> float:
+	var dmg := 0.0
+	if equipment_manager:
+		dmg = equipment_manager.get_total_weapon_damage()
+	if dmg <= 0.0:
+		dmg = unarmed_damage
+	return dmg
+
+
+## Sự kiện mở Hit Window (có thể gọi tự động qua timer hoặc trực tiếp từ Animation Call Method Track)
+func start_hit_window(damage_amount: float = -1.0) -> void:
+	if damage_amount <= 0.0:
+		damage_amount = get_current_damage()
+	_anim_event_hit_active = true
+	if equipment_manager:
+		equipment_manager.enable_weapon_hitbox(damage_amount)
+
+
+## Sự kiện đóng Hit Window (có thể gọi tự động qua timer hoặc trực tiếp từ Animation Call Method Track)
+func end_hit_window() -> void:
+	_anim_event_hit_active = false
+	if equipment_manager:
+		equipment_manager.disable_weapon_hitbox()
+
 
 func _set_attack_node_animation(anim_name: StringName) -> void:
 	if not animation_tree:
@@ -149,6 +222,14 @@ func _physics_process(delta: float) -> void:
 
 	if _attack_timer > 0.0:
 		_attack_timer -= delta
+
+	# Nếu UI đang mở thì đứng yên và không xoay chuyển
+	if player_ui and player_ui.is_open():
+		velocity.x = move_toward(velocity.x, 0, move_speed)
+		velocity.z = move_toward(velocity.z, 0, move_speed)
+		_update_animation_tree()
+		move_and_slide()
+		return
 
 	# Handle jump.
 	if Input.is_action_just_pressed("jump") and is_on_floor():
@@ -199,3 +280,32 @@ func handle_camera() -> void:
 	camera_pivot.rotation.y -= _camera_input_dir.x
 
 	_camera_input_dir = Vector2.ZERO
+
+
+func take_damage(amount: float) -> void:
+	if current_health <= 0.0:
+		return
+		
+	var actual_damage := maxf(1.0, amount - current_armor)
+	current_health = maxf(0.0, current_health - actual_damage)
+	
+	if player_ui:
+		player_ui.refresh_ui()
+	
+	print('player take dmg ', current_health)
+
+	if current_health <= 0.0:
+		_die()
+
+
+func _die() -> void:
+	is_attacking = false
+	end_hit_window()
+	set_physics_process(false)
+	
+	if animation_tree:
+		animation_tree.active = false
+		
+	var anim_player: AnimationPlayer = get_node_or_null("AnimationPlayer")
+	if anim_player and anim_player.has_animation("skeleton/Death_A"):
+		anim_player.play("skeleton/Death_A")

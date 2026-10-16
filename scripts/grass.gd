@@ -19,6 +19,9 @@ extends Node3D
 ## Mesh 3D dùng cho bụi cỏ
 @export var grass_mesh: Mesh = preload("res://meshs/terran/grass_1.tres")
 
+## Node CampSpawner để loại trừ cỏ mọc trong khu vực trại (nếu để trống, tự tìm group 'camp_spawner')
+@export var camp_spawner: Node3D
+
 ## Material ghi đè (tùy chọn)
 @export var material_override: Material
 
@@ -111,6 +114,14 @@ func _find_terrain() -> void:
 	else:
 		_terrain = get_tree().root.find_child("Terrain", true, false) as MeshInstance3D
 
+	if not camp_spawner or not is_instance_valid(camp_spawner):
+		if is_inside_tree() and get_tree():
+			var sp_nodes := get_tree().get_nodes_in_group("camp_spawner")
+			if not sp_nodes.is_empty():
+				camp_spawner = sp_nodes[0] as Node3D
+			elif get_tree().root:
+				camp_spawner = get_tree().root.find_child("CampSpawner", true, false) as Node3D
+
 	if _terrain and _terrain.has_signal("terrain_generated"):
 		if not _terrain.terrain_generated.is_connected(generate_grass):
 			_terrain.terrain_generated.connect(generate_grass)
@@ -130,6 +141,11 @@ func generate_grass(world_seed: int = 0) -> void:
 	if not _terrain or not _terrain.has_method("get_height") or not _terrain.has_method("get_normal"):
 		push_warning("[Grass] Không tìm thấy Terrain hợp lệ để sinh cỏ!")
 		return
+
+	# Đảm bảo CampSpawner đã sinh các camp để có danh sách vùng cấm
+	if camp_spawner and camp_spawner.has_method("generate_camps") and camp_spawner.has_method("get_camp_positions"):
+		if camp_spawner.get_camp_positions().is_empty():
+			camp_spawner.generate_camps(world_seed)
 
 	clear_grass()
 
@@ -173,41 +189,46 @@ func generate_grass(world_seed: int = 0) -> void:
 			var pz := z + rng.randf_range(-jitter, jitter)
 
 			if absf(px) < half_size and absf(pz) < half_size:
-				# 1. Kiểm tra noise cụm cỏ
-				var noise_val: float = (active_noise.get_noise_2d(px, pz) + 1.0) * 0.5
-				if noise_val >= noise_threshold:
-					# 2. Kiểm tra độ cao bề mặt lưới 3D thực tế
-					var h: float = _terrain.get_mesh_height(px, pz) if _terrain.has_method("get_mesh_height") else _terrain.get_height(px, pz)
-					if h >= min_height and h <= max_height:
-						# 3. Kiểm tra độ dốc địa hình
-						var norm: Vector3 = _terrain.get_normal(px, pz)
-						if norm.y >= min_slope:
-							var angle := rng.randf() * TAU
-							var rot_basis := Basis.from_euler(Vector3(0.0, angle, 0.0))
+				var in_camp := false
+				if camp_spawner and camp_spawner.has_method("is_point_in_camp"):
+					in_camp = camp_spawner.is_point_in_camp(px, pz)
 
-							if align_to_normal > 0.001 and norm.length_squared() > 0.001:
-								var target_up := Vector3.UP.slerp(norm, align_to_normal).normalized()
-								rot_basis = Basis(Quaternion(Vector3.UP, target_up)) * rot_basis
+				if not in_camp:
+					# 1. Kiểm tra noise cụm cỏ
+					var noise_val: float = (active_noise.get_noise_2d(px, pz) + 1.0) * 0.5
+					if noise_val >= noise_threshold:
+						# 2. Kiểm tra độ cao bề mặt lưới 3D thực tế
+						var h: float = _terrain.get_mesh_height(px, pz) if _terrain.has_method("get_mesh_height") else _terrain.get_height(px, pz)
+						if h >= min_height and h <= max_height:
+							# 3. Kiểm tra độ dốc địa hình
+							var norm: Vector3 = _terrain.get_normal(px, pz)
+							if norm.y >= min_slope:
+								var angle := rng.randf() * TAU
+								var rot_basis := Basis.from_euler(Vector3(0.0, angle, 0.0))
 
-							# Cỏ ở tâm vạt (noise_val cao) mọc to hơn rìa
-							var density_factor := remap(noise_val, noise_threshold, 1.0, 0.9, 1.25)
-							var s := rng.randf_range(min_scale, max_scale) * density_factor
-							# Bù độ lún trên sườn dốc để các lá cỏ ngoài rìa khóm không bị hổng chân
-							var slope_sink: float = (1.0 - clampf(norm.y, 0.0, 1.0)) * 0.15 * s
-							var final_y := h + (y_offset * s) - slope_sink
-							var basis := rot_basis.scaled(Vector3(s, s, s))
-							var origin := Vector3(px, final_y, pz)
-							var trans := Transform3D(basis, origin)
+								if align_to_normal > 0.001 and norm.length_squared() > 0.001:
+									var target_up := Vector3.UP.slerp(norm, align_to_normal).normalized()
+									rot_basis = Basis(Quaternion(Vector3.UP, target_up)) * rot_basis
 
-							# Phân vào ô Chunk tương ứng
-							var chunk_coord := Vector2i(
-								floori(px / chunk_size),
-								floori(pz / chunk_size)
-							)
+								# Cỏ ở tâm vạt (noise_val cao) mọc to hơn rìa
+								var density_factor := remap(noise_val, noise_threshold, 1.0, 0.9, 1.25)
+								var s := rng.randf_range(min_scale, max_scale) * density_factor
+								# Bù độ lún trên sườn dốc để các lá cỏ ngoài rìa khóm không bị hổng chân
+								var slope_sink: float = (1.0 - clampf(norm.y, 0.0, 1.0)) * 0.15 * s
+								var final_y := h + (y_offset * s) - slope_sink
+								var basis := rot_basis.scaled(Vector3(s, s, s))
+								var origin := Vector3(px, final_y, pz)
+								var trans := Transform3D(basis, origin)
 
-							if not chunks.has(chunk_coord):
-								chunks[chunk_coord] = []
-							chunks[chunk_coord].append(trans)
+								# Phân vào ô Chunk tương ứng
+								var chunk_coord := Vector2i(
+									floori(px / chunk_size),
+									floori(pz / chunk_size)
+								)
+
+								if not chunks.has(chunk_coord):
+									chunks[chunk_coord] = []
+								chunks[chunk_coord].append(trans)
 
 			z += step
 		x += step

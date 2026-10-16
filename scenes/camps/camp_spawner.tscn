@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://d0262bbmjcv2w"]
+
+[ext_resource type="Script" path="res://scripts/camp_spawner.gd" id="1_spawner"]
+[ext_resource type="PackedScene" uid="uid://c1qodcslina23" path="res://scenes/camps/camp_1.tscn" id="2_camp1"]
+
+[node name="CampSpawner" type="Node3D" groups=["camp_spawner"]]
+script = ExtResource("1_spawner")
+camp_scenes = [ExtResource("2_camp1")]
+
+[node name="CampsContainer" type="Node3D" parent="."]

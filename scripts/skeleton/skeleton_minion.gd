@@ -9,4 +9,3 @@ func _perform_attack() -> void:
 
 func _die() -> void:
 	super._die()
-	queue_free()

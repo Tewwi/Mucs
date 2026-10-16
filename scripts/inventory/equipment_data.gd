@@ -6,7 +6,9 @@ enum Slot {
 	CHEST,
 	ARMS,
 	LEGS,
-	WEAPON
+	RIGHT_HAND,
+	LEFT_HAND,
+	WEAPON = RIGHT_HAND ## Tương thích ngược với code cũ dùng Slot.WEAPON
 }
 
 @export_group("Basic Info")
@@ -38,3 +40,15 @@ enum Slot {
 @export var attack_animations: Array[StringName] = []
 @export var attack_cooldown: float = 0.6
 @export var weapon_damage: float = 15.0
+## Thời gian lấy đà trước khi hitbox bật gây sát thương (giây, vd: 0.15)
+@export var attack_windup_delay: float = 0.15
+## Thời gian hitbox duy trì gây sát thương trong vệt chém (giây, vd: 0.25)
+@export var attack_active_duration: float = 0.25
+
+@export_group("Weapon Hitbox")
+## Tự động tính kích thước và vị trí Hitbox theo Mesh của vũ khí (khớp 100% với lưỡi kiếm)
+@export var auto_hitbox_from_mesh: bool = true
+## Kích thước Hitbox nếu tự chỉnh tay (khi auto_hitbox_from_mesh = false)
+@export var custom_hitbox_size: Vector3 = Vector3(0.5, 1.4, 0.5)
+## Vị trí dịch tâm Hitbox nếu tự chỉnh tay
+@export var custom_hitbox_offset: Vector3 = Vector3(0.0, 0.6, 0.0)

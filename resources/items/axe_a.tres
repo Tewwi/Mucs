@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="EquipmentData" format=3]
+[gd_resource type="Resource" script_class="EquipmentData" format=3 uid="uid://hmc50d38tymt"]
 
 [ext_resource type="ArrayMesh" path="res://meshs/equipments/axe_A.res" id="1_2puvm"]
-[ext_resource type="Script" path="res://scripts/inventory/equipment_data.gd" id="2_tyl30"]
+[ext_resource type="Script" uid="uid://buld0pyn58g8h" path="res://scripts/inventory/equipment_data.gd" id="2_tyl30"]
 
 [resource]
 script = ExtResource("2_tyl30")
