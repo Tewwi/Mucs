@@ -6,7 +6,7 @@ extends CanvasLayer
 @onready var main_panel: Control = $MainPanel
 @onready var close_button: Button = %CloseButton
 
-# Các nút Slot Trang bị đang mặc
+# Các nút Slot Trang bị
 @onready var head_slot_btn: Button = %SlotHead
 @onready var chest_slot_btn: Button = %SlotChest
 @onready var arms_slot_btn: Button = %SlotArms
@@ -16,8 +16,17 @@ extends CanvasLayer
 
 # Label Chỉ số
 @onready var stats_health_label: Label = %StatsHealth
+@onready var stats_shield_label: Label = %StatsShield
 @onready var stats_armor_label: Label = %StatsArmor
+@onready var stats_strength_label: Label = %StatsStrength
+@onready var stats_crit_label: Label = %StatsCrit
+@onready var stats_attack_speed_label: Label = %StatsAttackSpeed
+@onready var stats_speed_label: Label = %StatsSpeed
 @onready var stats_damage_label: Label = %StatsDamage
+
+# Preview 3D
+@onready var preview_root: Node3D = %PreviewRoot
+@onready var preview_sub_viewport: SubViewport = %PreviewSubViewport
 
 # Lưới túi đồ và Tooltip
 @onready var inventory_grid: GridContainer = %InventoryGrid
@@ -25,14 +34,27 @@ extends CanvasLayer
 @onready var item_info_desc: Label = %ItemInfoDesc
 @onready var item_info_stats: Label = %ItemInfoStats
 
+# Silhouette Icons mặc định
+const ICON_WEAPON = preload("res://assets/ui/icons/slot_weapon.svg")
+const ICON_SHIELD = preload("res://assets/ui/icons/slot_shield.svg")
+const ICON_HEAD = preload("res://assets/ui/icons/slot_head.svg")
+const ICON_CHEST = preload("res://assets/ui/icons/slot_chest.svg")
+const ICON_LEGS = preload("res://assets/ui/icons/slot_legs.svg")
+const ICON_BOOTS = preload("res://assets/ui/icons/slot_boots.svg")
+
 var _is_open: bool = false
 var _inventory: Inventory
 var _equipment_manager: EquipmentManager
+
+var _slot_normal_style: StyleBoxFlat
+var _slot_hover_style: StyleBoxFlat
+var _slot_pressed_style: StyleBoxFlat
 
 
 func _ready() -> void:
 	visible = false
 	_is_open = false
+	_init_styles()
 	
 	if close_button:
 		close_button.pressed.connect(close_ui)
@@ -41,17 +63,45 @@ func _ready() -> void:
 	_find_player_references()
 
 
+func _init_styles() -> void:
+	_slot_normal_style = StyleBoxFlat.new()
+	_slot_normal_style.bg_color = Color(0.329, 0.2, 0.161, 1.0)
+	_slot_normal_style.border_width_left = 2
+	_slot_normal_style.border_width_top = 2
+	_slot_normal_style.border_width_right = 2
+	_slot_normal_style.border_width_bottom = 2
+	_slot_normal_style.border_color = Color(0.180, 0.110, 0.086, 1.0)
+	_slot_normal_style.set_corner_radius_all(8)
+	
+	_slot_hover_style = StyleBoxFlat.new()
+	_slot_hover_style.bg_color = Color(0.380, 0.231, 0.184, 1.0)
+	_slot_hover_style.border_width_left = 2
+	_slot_hover_style.border_width_top = 2
+	_slot_hover_style.border_width_right = 2
+	_slot_hover_style.border_width_bottom = 2
+	_slot_hover_style.border_color = Color(0.851, 0.651, 0.302, 1.0)
+	_slot_hover_style.set_corner_radius_all(8)
+	
+	_slot_pressed_style = StyleBoxFlat.new()
+	_slot_pressed_style.bg_color = Color(0.251, 0.149, 0.118, 1.0)
+	_slot_pressed_style.border_width_left = 2
+	_slot_pressed_style.border_width_top = 2
+	_slot_pressed_style.border_width_right = 2
+	_slot_pressed_style.border_width_bottom = 2
+	_slot_pressed_style.border_color = Color(0.953, 0.753, 0.353, 1.0)
+	_slot_pressed_style.set_corner_radius_all(8)
+
+
 func is_open() -> bool:
 	return _is_open
 
 
 func _input(event: InputEvent) -> void:
-	# Bấm action "toogle_bag" (hoặc Tab / I) để bật/tắt túi đồ
 	if event.is_action_pressed("toogle_bag"):
 		get_viewport().set_input_as_handled()
 		toggle_ui()
 	elif event is InputEventKey and event.pressed and not event.echo:
-		if event.physical_keycode == KEY_TAB or event.physical_keycode == KEY_I:
+		if event.physical_keycode == KEY_TAB or event.physical_keycode == KEY_I or event.physical_keycode == KEY_B:
 			get_viewport().set_input_as_handled()
 			toggle_ui()
 		elif event.physical_keycode == KEY_ESCAPE and _is_open:
@@ -82,7 +132,6 @@ func close_ui() -> void:
 
 func _find_player_references() -> void:
 	if not player:
-		# Tìm từ cha hoặc trong scene
 		var parent_node := get_parent()
 		if parent_node is Player:
 			player = parent_node
@@ -134,6 +183,22 @@ func refresh_ui() -> void:
 	_update_stats_display()
 	_update_equipment_slots()
 	_update_inventory_grid()
+	_update_character_preview()
+
+
+func _update_character_preview() -> void:
+	if not preview_root or not player:
+		return
+		
+	# Xóa preview cũ
+	for child in preview_root.get_children():
+		child.queue_free()
+		
+	if player.rig:
+		var clone := player.rig.duplicate() as Node3D
+		clone.position = Vector3(0, 0, 0)
+		clone.rotation = Vector3(0, 0, 0) # Hướng nhân vật
+		preview_root.add_child(clone)
 
 
 func _update_stats_display() -> void:
@@ -141,74 +206,133 @@ func _update_stats_display() -> void:
 		return
 	
 	if stats_health_label:
-		stats_health_label.text = "❤️ Máu: %d / %d" % [int(player.current_health), int(player.base_max_health)]
-		
+		stats_health_label.text = "%d" % int(player.current_health)
+	if stats_shield_label:
+		stats_shield_label.text = "0"
 	if stats_armor_label:
-		stats_armor_label.text = "🛡️ Giáp: %d" % int(player.current_armor)
+		stats_armor_label.text = "%d" % int(player.current_armor)
+	if stats_strength_label:
+		stats_strength_label.text = "0"
+	if stats_crit_label:
+		stats_crit_label.text = "10%"
+	if stats_attack_speed_label:
+		stats_attack_speed_label.text = "0"
+	if stats_speed_label:
+		stats_speed_label.text = "%d" % int(player.move_speed)
 		
 	if stats_damage_label:
-		var dmg: float = 15.0 # Sát thương tay không cơ bản
+		var dmg: float = 2.0
 		if _equipment_manager:
 			var w_dmg := _equipment_manager.get_total_weapon_damage()
 			if w_dmg > 0.0:
 				dmg = w_dmg
-		stats_damage_label.text = "⚔️ Sát thương: %d" % int(dmg)
+		stats_damage_label.text = "%d" % int(dmg)
 
 
 func _update_equipment_slots() -> void:
 	if not _equipment_manager:
 		return
 		
-	_set_slot_button_text(head_slot_btn, "🎩 Mũ", EquipmentData.Slot.HEAD)
-	_set_slot_button_text(chest_slot_btn, "🛡️ Áo giáp", EquipmentData.Slot.CHEST)
-	_set_slot_button_text(arms_slot_btn, "🧤 Giáp tay", EquipmentData.Slot.ARMS)
-	_set_slot_button_text(legs_slot_btn, "👖 Quần giáp", EquipmentData.Slot.LEGS)
-	_set_slot_button_text(left_hand_slot_btn, "🛡️ Tay Trái", EquipmentData.Slot.LEFT_HAND)
-	_set_slot_button_text(right_hand_slot_btn, "⚔️ Tay Phải", EquipmentData.Slot.RIGHT_HAND)
+	_render_equipment_slot(head_slot_btn, EquipmentData.Slot.HEAD)
+	_render_equipment_slot(chest_slot_btn, EquipmentData.Slot.CHEST)
+	_render_equipment_slot(arms_slot_btn, EquipmentData.Slot.ARMS)
+	_render_equipment_slot(legs_slot_btn, EquipmentData.Slot.LEGS)
+	_render_equipment_slot(left_hand_slot_btn, EquipmentData.Slot.LEFT_HAND)
+	_render_equipment_slot(right_hand_slot_btn, EquipmentData.Slot.RIGHT_HAND)
 
 
-func _set_slot_button_text(btn: Button, default_title: String, slot: EquipmentData.Slot) -> void:
+func _render_equipment_slot(btn: Button, slot: EquipmentData.Slot) -> void:
 	if not btn:
 		return
 	var item := _equipment_manager.get_equipped_item(slot)
+	var placeholder: TextureRect = btn.get_node_or_null("Placeholder")
+	var icon: TextureRect = btn.get_node_or_null("Icon")
+	
 	if item:
-		btn.text = "%s:\n%s" % [default_title, item.item_name]
-		btn.modulate = Color(1.0, 1.0, 1.0)
+		if placeholder: 
+			placeholder.visible = false
+		if icon:
+			icon.visible = true
+			icon.texture = _get_item_icon(item)
+			icon.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		btn.tooltip_text = "%s\n%s" % [item.item_name, item.description]
 	else:
-		btn.text = "%s:\n[Trống]" % default_title
-		btn.modulate = Color(0.7, 0.7, 0.7)
+		if placeholder: 
+			placeholder.visible = true
+		if icon: 
+			icon.visible = false
+		btn.tooltip_text = "[Trống]"
+
+
+func _get_item_icon(item: EquipmentData) -> Texture2D:
+	if not item:
+		return null
+	if item.icon:
+		return item.icon
+	# Fallback theo từng loại slot nếu item chưa có file icon
+	match item.slot_type:
+		EquipmentData.Slot.RIGHT_HAND, EquipmentData.Slot.WEAPON:
+			return ICON_WEAPON
+		EquipmentData.Slot.LEFT_HAND:
+			return ICON_SHIELD
+		EquipmentData.Slot.HEAD:
+			return ICON_HEAD
+		EquipmentData.Slot.CHEST:
+			return ICON_CHEST
+		EquipmentData.Slot.LEGS:
+			return ICON_LEGS
+		EquipmentData.Slot.ARMS:
+			return ICON_BOOTS
+		_:
+			return ICON_WEAPON
 
 
 func _update_inventory_grid() -> void:
 	if not inventory_grid:
 		return
 		
-	# Xóa các nút cũ trong grid
 	for child in inventory_grid.get_children():
 		child.queue_free()
 		
 	var items: Array[EquipmentData] = []
 	if _inventory:
 		items = _inventory.items
-	var max_slots: int = _inventory.max_slots if _inventory else 16
+	# 8 cột, 3 hàng = 24 ô
+	var max_slots: int = maxi(_inventory.max_slots if _inventory else 24, 24)
 	
 	for i in range(max_slots):
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(100, 70)
-		btn.clip_text = true
+		var slot_btn := Button.new()
+		slot_btn.custom_minimum_size = Vector2(54, 54)
+		slot_btn.mouse_filter = Control.MOUSE_FILTER_STOP
+		
+		# Gán viền và nền ô theo phong cách ảnh tham chiếu
+		slot_btn.add_theme_stylebox_override("normal", _slot_normal_style)
+		slot_btn.add_theme_stylebox_override("hover", _slot_hover_style)
+		slot_btn.add_theme_stylebox_override("pressed", _slot_pressed_style)
+		slot_btn.add_theme_stylebox_override("focus", _slot_hover_style)
 		
 		if i < items.size():
 			var item := items[i]
-			btn.text = item.item_name
-			btn.tooltip_text = "%s\n%s" % [item.item_name, item.description]
-			btn.pressed.connect(func(): _equip_item(item))
-			btn.mouse_entered.connect(func(): _show_item_info(item))
-		else:
-			btn.text = "---"
-			btn.disabled = true
-			btn.modulate = Color(0.4, 0.4, 0.4, 0.5)
+			slot_btn.tooltip_text = "%s\n%s" % [item.item_name, item.description]
+			slot_btn.pressed.connect(func(): _equip_item(item))
+			slot_btn.mouse_entered.connect(func(): _show_item_info(item))
 			
-		inventory_grid.add_child(btn)
+			# Hiển thị Texture icon
+			var icon_rect := TextureRect.new()
+			icon_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+			icon_rect.offset_left = 6
+			icon_rect.offset_top = 6
+			icon_rect.offset_right = -6
+			icon_rect.offset_bottom = -6
+			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			icon_rect.texture = _get_item_icon(item)
+			slot_btn.add_child(icon_rect)
+		else:
+			slot_btn.text = ""
+			
+		inventory_grid.add_child(slot_btn)
 
 
 func _equip_item(item: EquipmentData) -> void:
@@ -262,9 +386,9 @@ func _show_slot_info(slot: EquipmentData.Slot) -> void:
 
 func _clear_info() -> void:
 	if item_info_title:
-		item_info_title.text = "Chọn một món đồ"
+		item_info_title.text = "Chọn vật phẩm"
 	if item_info_desc:
-		item_info_desc.text = "Bấm chuột trái vào đồ trong túi để mặc vào người. Bấm vào ô trang bị để tháo đồ ra."
+		item_info_desc.text = "Bấm chuột trái vào đồ trong túi để mặc vào người. Bấm vào ô trang bị để cởi đồ ra."
 	if item_info_stats:
 		item_info_stats.text = ""
 

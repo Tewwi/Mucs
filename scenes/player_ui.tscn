@@ -1,25 +1,63 @@
-[gd_scene format=3 uid="uid://cd4qt8davy2un"]
+[gd_scene load_steps=12 format=3 uid="uid://cd4qt8davy2un"]
 
 [ext_resource type="Script" path="res://scripts/ui/player_ui.gd" id="1_ui"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/slot_weapon.svg" id="2_weapon"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/slot_shield.svg" id="3_shield"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/slot_head.svg" id="4_head"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/slot_chest.svg" id="5_chest"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/slot_legs.svg" id="6_legs"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/slot_boots.svg" id="7_boots"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
-bg_color = Color(0.12156863, 0.13333334, 0.16078432, 0.9411765)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.7294118, 0.47058824, 0.3647059, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.52, 0.31, 0.23, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 10
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slot_normal"]
+bg_color = Color(0.32941177, 0.2, 0.16078432, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.3137255, 0.3529412, 0.4392157, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
+border_color = Color(0.18039216, 0.10980392, 0.08627451, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_infobox"]
-bg_color = Color(0.08235294, 0.09019608, 0.10980392, 0.8)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slot_hover"]
+bg_color = Color(0.38039216, 0.23137255, 0.18431373, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.8509804, 0.6509804, 0.3019608, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slot_pressed"]
+bg_color = Color(0.2509804, 0.14901961, 0.11764706, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.9529412, 0.7529412, 0.3529412, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
 
 [node name="PlayerUI" type="CanvasLayer"]
 process_mode = 3
@@ -41,7 +79,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.47058824)
+color = Color(0, 0, 0, 0.45)
 
 [node name="CenterContainer" type="CenterContainer" parent="MainPanel"]
 layout_mode = 1
@@ -52,187 +90,512 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="PanelContainer" type="PanelContainer" parent="MainPanel/CenterContainer"]
-custom_minimum_size = Vector2(740, 520)
+custom_minimum_size = Vector2(600, 485)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="CloseButton" type="Button" parent="MainPanel/CenterContainer/PanelContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.3, 0.15, 0.1, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_slot_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot_pressed")
+text = "✕"
 
 [node name="MarginContainer" type="MarginContainer" parent="MainPanel/CenterContainer/PanelContainer"]
 layout_mode = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 10
 
 [node name="RootVBox" type="VBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer"]
 layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TopSection" type="HBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox"]
+layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="HeaderBar" type="HBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox"]
+[node name="EquipmentSection" type="HBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection"]
 layout_mode = 2
+theme_override_constants/separation = 6
 
-[node name="Title" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/HeaderBar"]
+[node name="ColWeapons" type="VBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SlotRightHand" type="Button" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColWeapons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+tooltip_text = "Tay Phải / Vũ khí"
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_slot_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot_pressed")
+
+[node name="Placeholder" type="TextureRect" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColWeapons/SlotRightHand"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_weapon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColWeapons/SlotRightHand"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SlotLeftHand" type="Button" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColWeapons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+tooltip_text = "Tay Trái / Khiên"
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_slot_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot_pressed")
+
+[node name="Placeholder" type="TextureRect" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColWeapons/SlotLeftHand"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_shield")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColWeapons/SlotLeftHand"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ColArmor" type="VBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SlotHead" type="Button" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColArmor"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+tooltip_text = "Mũ / Nón"
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_slot_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot_pressed")
+
+[node name="Placeholder" type="TextureRect" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColArmor/SlotHead"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_head")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColArmor/SlotHead"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SlotChest" type="Button" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColArmor"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+tooltip_text = "Áo Giáp"
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_slot_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot_pressed")
+
+[node name="Placeholder" type="TextureRect" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColArmor/SlotChest"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_chest")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColArmor/SlotChest"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SlotLegs" type="Button" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColArmor"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+tooltip_text = "Quần Giáp"
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_slot_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot_pressed")
+
+[node name="Placeholder" type="TextureRect" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColArmor/SlotLegs"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_legs")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColArmor/SlotLegs"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SlotArms" type="Button" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColArmor"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+tooltip_text = "Giày / Giáp Tay"
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_slot_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot_pressed")
+
+[node name="Placeholder" type="TextureRect" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColArmor/SlotArms"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_boots")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/EquipmentSection/ColArmor/SlotArms"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CenterPreviewContainer" type="CenterContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 20
-text = "🎒 BẢNG NHÂN VẬT & TÚI ĐỒ (TAB / B)"
 
-[node name="CloseButton" type="Button" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/HeaderBar"]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/CenterPreviewContainer"]
+custom_minimum_size = Vector2(190, 226)
+layout_mode = 2
+stretch = true
+
+[node name="PreviewSubViewport" type="SubViewport" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/CenterPreviewContainer/SubViewportContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(36, 32)
-layout_mode = 2
-text = "✕"
+own_world_3d = true
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(190, 226)
+render_target_update_mode = 3
 
-[node name="TopHSeparator" type="HSeparator" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox"]
+[node name="Camera3D" type="Camera3D" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/CenterPreviewContainer/SubViewportContainer/PreviewSubViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 2.3)
+fov = 42.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/CenterPreviewContainer/SubViewportContainer/PreviewSubViewport"]
+transform = Transform3D(0.866025, -0.25, 0.433013, 0, 0.866025, 0.5, -0.5, -0.433013, 0.75, 0, 2, 2)
+light_color = Color(1, 0.96, 0.9, 1)
+light_energy = 1.25
+
+[node name="PreviewRoot" type="Node3D" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/CenterPreviewContainer/SubViewportContainer/PreviewSubViewport"]
+unique_name_in_owner = true
+
+[node name="StatsColumn" type="VBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 4
+
+[node name="RowHealth" type="HBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn"]
 layout_mode = 2
 
-[node name="MainColumns" type="HBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox"]
+[node name="Label" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowHealth"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "HP"
+
+[node name="StatsHealth" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowHealth"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "100"
+horizontal_alignment = 2
+
+[node name="RowShield" type="HBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowShield"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "Shield"
+
+[node name="StatsShield" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowShield"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "0"
+horizontal_alignment = 2
+
+[node name="RowArmor" type="HBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowArmor"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "Armor"
+
+[node name="StatsArmor" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowArmor"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "0"
+horizontal_alignment = 2
+
+[node name="RowStrength" type="HBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowStrength"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "Strength"
+
+[node name="StatsStrength" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowStrength"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "0"
+horizontal_alignment = 2
+
+[node name="RowCrit" type="HBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowCrit"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "Critical%"
+
+[node name="StatsCrit" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowCrit"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "10%"
+horizontal_alignment = 2
+
+[node name="RowAttackSpeed" type="HBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowAttackSpeed"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "Attack Speed"
+
+[node name="StatsAttackSpeed" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowAttackSpeed"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "0"
+horizontal_alignment = 2
+
+[node name="RowSpeed" type="HBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowSpeed"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "Speed"
+
+[node name="StatsSpeed" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowSpeed"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "0"
+horizontal_alignment = 2
+
+[node name="RowMaxHit" type="HBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowMaxHit"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "Max Hit"
+
+[node name="StatsDamage" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/TopSection/StatsColumn/RowMaxHit"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.12, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "2"
+horizontal_alignment = 2
+
+[node name="InventoryTitle" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.22, 0.13, 0.1, 1)
+theme_override_colors/font_shadow_color = Color(0.85, 0.6, 0.5, 0.5)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 18
+text = "INVENTORY"
+horizontal_alignment = 1
+
+[node name="GridCenter" type="CenterContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 24
 
-[node name="LeftColumn" type="VBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns"]
-custom_minimum_size = Vector2(250, 0)
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="EquipTitle" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/LeftColumn"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.8, 0.4, 1)
-theme_override_font_sizes/font_size = 15
-text = "🛡️ TRANG BỊ ĐANG MẶC"
-
-[node name="SlotHead" type="Button" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/LeftColumn"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 46)
-layout_mode = 2
-text = "🎩 Mũ:
-[Trống]"
-
-[node name="SlotChest" type="Button" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/LeftColumn"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 46)
-layout_mode = 2
-text = "🛡️ Áo giáp:
-[Trống]"
-
-[node name="SlotArms" type="Button" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/LeftColumn"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 46)
-layout_mode = 2
-text = "🧤 Giáp tay:
-[Trống]"
-
-[node name="SlotLegs" type="Button" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/LeftColumn"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 46)
-layout_mode = 2
-text = "👖 Quần giáp:
-[Trống]"
-
-[node name="HandsRow" type="HBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/LeftColumn"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="SlotLeftHand" type="Button" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/LeftColumn/HandsRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "🛡️ Tay Trái:
-[Trống]"
-
-[node name="SlotRightHand" type="Button" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/LeftColumn/HandsRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "⚔️ Tay Phải:
-[Trống]"
-
-[node name="MidHSeparator" type="HSeparator" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/LeftColumn"]
-layout_mode = 2
-
-[node name="StatsTitle" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/LeftColumn"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.8, 0.9, 1)
-theme_override_font_sizes/font_size = 14
-text = "📊 CHỈ SỐ NHÂN VẬT"
-
-[node name="StatsHealth" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/LeftColumn"]
+[node name="InventoryGrid" type="GridContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/GridCenter"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "❤️ Máu: 100 / 100"
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 8
 
-[node name="StatsArmor" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/LeftColumn"]
-unique_name_in_owner = true
+[node name="InfoBox" type="HBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox"]
 layout_mode = 2
-text = "🛡️ Giáp: 0"
-
-[node name="StatsDamage" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/LeftColumn"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "⚔️ Sát thương: 15"
-
-[node name="ColumnsVSeparator" type="VSeparator" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns"]
-layout_mode = 2
-
-[node name="RightColumn" type="VBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns"]
-layout_mode = 2
-size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
-[node name="InvTitle" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/RightColumn"]
+[node name="ItemInfoTitle" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/InfoBox"]
+unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.8, 0.4, 1)
-theme_override_font_sizes/font_size = 15
-text = "📦 TÚI ĐỒ (Click để mặc / Click đồ đang mặc để tháo)"
+theme_override_colors/font_color = Color(0.22, 0.13, 0.1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Chọn vật phẩm"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/RightColumn"]
-custom_minimum_size = Vector2(0, 240)
+[node name="ItemInfoStats" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/InfoBox"]
+unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.15, 0.35, 0.15, 1)
+theme_override_font_sizes/font_size = 12
 
-[node name="InventoryGrid" type="GridContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/RightColumn/ScrollContainer"]
+[node name="ItemInfoDesc" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/InfoBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 8
-columns = 4
-
-[node name="InfoPanel" type="PanelContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/RightColumn"]
-custom_minimum_size = Vector2(0, 90)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_infobox")
-
-[node name="InfoMargin" type="MarginContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/RightColumn/InfoPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 8
-
-[node name="InfoVBox" type="VBoxContainer" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/RightColumn/InfoPanel/InfoMargin"]
-layout_mode = 2
-
-[node name="ItemInfoTitle" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/RightColumn/InfoPanel/InfoMargin/InfoVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
-theme_override_font_sizes/font_size = 14
-text = "Chọn một món đồ"
-
-[node name="ItemInfoStats" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/RightColumn/InfoPanel/InfoMargin/InfoVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.9, 0.5, 1)
-theme_override_font_sizes/font_size = 13
-
-[node name="ItemInfoDesc" type="Label" parent="MainPanel/CenterContainer/PanelContainer/MarginContainer/RootVBox/MainColumns/RightColumn/InfoPanel/InfoMargin/InfoVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
-theme_override_font_sizes/font_size = 12
-text = "Bấm chuột trái vào đồ trong túi để mặc vào người. Bấm vào ô trang bị bên trái để cởi đồ ra."
-autowrap_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.25, 0.2, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "Click để mặc/tháo trang bị."
+text_overrun_behavior = 3

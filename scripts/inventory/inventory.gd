@@ -5,7 +5,7 @@ signal item_added(item: EquipmentData)
 signal item_removed(item: EquipmentData)
 signal inventory_full()
 
-@export var max_slots: int = 16
+@export var max_slots: int = 24
 @export var auto_equip_on_pickup: bool = true
 @export var equipment_manager: EquipmentManager
 
