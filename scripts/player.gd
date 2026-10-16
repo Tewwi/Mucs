@@ -18,6 +18,12 @@ extends CharacterBody3D
 
 @export_group("Combat")
 @export var attack_cooldown: float = 0.6
+## Tốc độ lướt nhẹ về phía trước khi chém (đặt 0 nếu không muốn lướt)
+@export var attack_lunge_speed: float = 3.5
+## Tốc độ hãm đà lướt khi chém
+@export var attack_lunge_friction: float = 14.0
+## Tỉ lệ tốc độ di chuyển khi đánh (0.0 = khóa hoàn toàn di chuyển WASD, 0.3 = giảm 70% tốc độ)
+@export_range(0.0, 1.0, 0.05) var attack_move_speed_ratio: float = 0.0
 ## Thời gian lấy đà trước khi hitbox bật khi đánh tay không (giây, vd: 0.12)
 @export var default_attack_windup: float = 0.12
 ## Thời gian hitbox duy trì gây sát thương khi đánh tay không (giây, vd: 0.22)
@@ -25,7 +31,7 @@ extends CharacterBody3D
 
 const DEFAULT_UNARMED_ATTACKS: Array[StringName] = [
 	&"skeleton/Melee_Unarmed_Attack_Punch_A",
-	&"skeleton/Melee_Unarmed_Attack_Kick"
+	&"skeleton/Melee_Unarmed_Attack_Punch_B"
 ]
 
 var current_attack_animations: Array[StringName] = DEFAULT_UNARMED_ATTACKS
@@ -39,6 +45,12 @@ var is_attacking: bool = false
 var _attack_timer: float = 0.0
 @export var unarmed_damage: float = 12.0
 var _anim_event_hit_active: bool = false
+
+## Thời gian tối đa cho phép bấm nối tiếp combo sau khi kết thúc đòn trước (giây)
+@export var combo_reset_time: float = 0.8
+var _combo_index: int = -1
+var _last_attack_finished_time: float = 0.0
+var _buffered_attack: bool = false
 
 var _camera_input_dir := Vector2.ZERO
 var player_ui: PlayerUI
@@ -98,10 +110,12 @@ func _on_equipment_changed(slot: EquipmentData.Slot, new_item: EquipmentData, _o
 				attack_cooldown = new_item.attack_cooldown
 			else:
 				current_attack_animations = DEFAULT_UNARMED_ATTACKS
-				attack_cooldown = 0.6
+				attack_cooldown = 0.45
 		else:
 			current_attack_animations = DEFAULT_UNARMED_ATTACKS
-			attack_cooldown = 0.6
+			attack_cooldown = 0.45
+		_combo_index = -1
+		_buffered_attack = false
 
 func _input(event: InputEvent) -> void:
 	if player_ui and player_ui.is_open():
@@ -113,7 +127,10 @@ func _input(event: InputEvent) -> void:
 		if Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
 			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 		else:
-			attack()
+			if is_attacking:
+				_buffered_attack = true
+			else:
+				attack()
 
 func attack() -> void:
 	if is_attacking or _attack_timer > 0.0 or current_health <= 0.0:
@@ -122,16 +139,53 @@ func attack() -> void:
 	is_attacking = true
 	_attack_timer = attack_cooldown
 	_anim_event_hit_active = false
+	_buffered_attack = false
 	
-	# Chọn ngẫu nhiên hoặc theo thứ tự đòn đánh trong danh sách đòn của vũ khí hiện tại
-	var chosen_anim: StringName = current_attack_animations.pick_random() if current_attack_animations.size() > 0 else &"skeleton/Melee_Unarmed_Attack_Punch_A"
-	_set_attack_node_animation(chosen_anim)
+	# Xoay model nhân vật về hướng đánh (hướng di chuyển nếu đang bấm, hoặc hướng camera)
+	var input_dir := Input.get_vector("left", "right", "up", "down")
+	var attack_dir: Vector3
+	if input_dir.length_squared() > 0.01:
+		attack_dir = (Vector3(input_dir.x, 0, input_dir.y)).rotated(Vector3.UP, camera_pivot.global_rotation.y).normalized()
+	elif camera_pivot:
+		var cam_forward := -camera_pivot.global_transform.basis.z
+		cam_forward.y = 0.0
+		attack_dir = cam_forward.normalized()
+		
+	if attack_dir != Vector3.ZERO and rig:
+		rig.rotation.y = atan2(attack_dir.x, attack_dir.z)
+
+	# Lướt nhẹ về phía trước khi chém (Lunge)
+	if is_on_floor() and attack_lunge_speed > 0.0 and rig:
+		var forward := Vector3(sin(rig.rotation.y), 0, cos(rig.rotation.y)).normalized()
+		velocity.x = forward.x * attack_lunge_speed
+		velocity.z = forward.z * attack_lunge_speed
+	
+	# Tính toán combo theo chuỗi animation của vũ khí
+	var now := Time.get_ticks_msec() / 1000.0
+	if now - _last_attack_finished_time > combo_reset_time or current_attack_animations.is_empty():
+		_combo_index = 0
+	else:
+		_combo_index = (_combo_index + 1) % current_attack_animations.size()
+
+	var chosen_anim: StringName = current_attack_animations[_combo_index] if current_attack_animations.size() > 0 else &"skeleton/Melee_Unarmed_Attack_Punch_A"
+	
+	# Luân phiên 2 node trong State Machine: Đòn 1 vào "Attack", Đòn 2 vào "Attack_2", Đòn 3 vào "Attack"...
+	var target_node: StringName = &"Attack"
+	var sm := animation_tree.tree_root as AnimationNodeStateMachine if animation_tree else null
+	if sm and sm.has_node("Attack_2") and (_combo_index % 2 == 1):
+		target_node = &"Attack_2"
+
+	_set_attack_node_animation(chosen_anim, target_node)
 	
 	if animation_tree:
 		animation_tree.set("parameters/conditions/isAttacking", true)
 		animation_tree.set("parameters/conditions/isRunning", false)
 		animation_tree.set("parameters/conditions/isIdle", false)
 		animation_tree.set("parameters/conditions/isJump", false)
+		
+		var playback := animation_tree.get("parameters/playback") as AnimationNodeStateMachinePlayback
+		if playback:
+			playback.travel(target_node)
 		
 		# Reset cờ isAttacking sau 0.1s để State Machine kết thúc đòn qua 'At End'
 		var timer := get_tree().create_timer(0.1)
@@ -152,7 +206,7 @@ func attack() -> void:
 		if w_item:
 			windup_delay = w_item.attack_windup_delay
 			active_duration = w_item.attack_active_duration
-	
+
 	var hit_start_timer := get_tree().create_timer(windup_delay)
 	hit_start_timer.timeout.connect(func():
 		if is_attacking and not _anim_event_hit_active:
@@ -169,6 +223,10 @@ func attack() -> void:
 	finish_timer.timeout.connect(func():
 		is_attacking = false
 		end_hit_window()
+		_last_attack_finished_time = Time.get_ticks_msec() / 1000.0
+		if _buffered_attack and current_health > 0.0:
+			_buffered_attack = false
+			attack()
 	)
 
 
@@ -197,18 +255,20 @@ func end_hit_window() -> void:
 		equipment_manager.disable_weapon_hitbox()
 
 
-func _set_attack_node_animation(anim_name: StringName) -> void:
+func _set_attack_node_animation(anim_name: StringName, node_name: StringName = &"Attack") -> void:
 	if not animation_tree:
 		return
 	var sm := animation_tree.tree_root as AnimationNodeStateMachine
-	if sm and sm.has_node("Attack"):
-		var attack_node := sm.get_node("Attack") as AnimationNodeAnimation
+	if sm and sm.has_node(node_name):
+		var attack_node := sm.get_node(node_name) as AnimationNodeAnimation
 		if attack_node:
 			attack_node.animation = anim_name
 
 func set_attack_animations(anims: Array[StringName], cooldown: float = 0.6) -> void:
 	current_attack_animations = anims if anims.size() > 0 else DEFAULT_UNARMED_ATTACKS
 	attack_cooldown = cooldown
+	_combo_index = -1
+	_buffered_attack = false
 
 func _unhandled_input(event: InputEvent) -> void:
 	var is_camera_motion := (event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED)
@@ -231,24 +291,42 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
-	# Handle jump.
-	if Input.is_action_just_pressed("jump") and is_on_floor():
+	# Handle jump (không nhảy khi đang chém).
+	if Input.is_action_just_pressed("jump") and is_on_floor() and not is_attacking:
 		velocity.y = JUMP_VELOCITY
 
-	# Hướng di chuyển phụ thuộc vào góc quay của Camera (Yaw)
-	var input_dir := Input.get_vector("left", "right", "up", "down")
-	var direction := (Vector3(input_dir.x, 0, input_dir.y)).rotated(Vector3.UP, camera_pivot.global_rotation.y).normalized()
-	if direction:
-		velocity.x = direction.x * move_speed
-		velocity.z = direction.z * move_speed
-		
-		# Xoay model nhân vật theo hướng di chuyển (Model hướng +Z)
-		if rig:
-			var target_yaw := atan2(direction.x, direction.z)
-			rig.rotation.y = lerp_angle(rig.rotation.y, target_yaw, 15.0 * delta)
+	if is_attacking:
+		if attack_move_speed_ratio > 0.0:
+			var input_dir := Input.get_vector("left", "right", "up", "down")
+			var direction := (Vector3(input_dir.x, 0, input_dir.y)).rotated(Vector3.UP, camera_pivot.global_rotation.y).normalized()
+			if direction:
+				velocity.x = move_toward(velocity.x, direction.x * (move_speed * attack_move_speed_ratio), acceleration * delta)
+				velocity.z = move_toward(velocity.z, direction.z * (move_speed * attack_move_speed_ratio), acceleration * delta)
+				if rig:
+					var target_yaw := atan2(direction.x, direction.z)
+					rig.rotation.y = lerp_angle(rig.rotation.y, target_yaw, 10.0 * delta)
+			else:
+				velocity.x = move_toward(velocity.x, 0, attack_lunge_friction * delta)
+				velocity.z = move_toward(velocity.z, 0, attack_lunge_friction * delta)
+		else:
+			# Khóa hoàn toàn phím di chuyển, hãm đà lướt về 0
+			velocity.x = move_toward(velocity.x, 0, attack_lunge_friction * delta)
+			velocity.z = move_toward(velocity.z, 0, attack_lunge_friction * delta)
 	else:
-		velocity.x = move_toward(velocity.x, 0, move_speed)
-		velocity.z = move_toward(velocity.z, 0, move_speed)
+		# Hướng di chuyển phụ thuộc vào góc quay của Camera (Yaw)
+		var input_dir := Input.get_vector("left", "right", "up", "down")
+		var direction := (Vector3(input_dir.x, 0, input_dir.y)).rotated(Vector3.UP, camera_pivot.global_rotation.y).normalized()
+		if direction:
+			velocity.x = direction.x * move_speed
+			velocity.z = direction.z * move_speed
+			
+			# Xoay model nhân vật theo hướng di chuyển (Model hướng +Z)
+			if rig:
+				var target_yaw := atan2(direction.x, direction.z)
+				rig.rotation.y = lerp_angle(rig.rotation.y, target_yaw, 15.0 * delta)
+		else:
+			velocity.x = move_toward(velocity.x, 0, move_speed)
+			velocity.z = move_toward(velocity.z, 0, move_speed)
 
 	_update_animation_tree()
 	handle_camera()

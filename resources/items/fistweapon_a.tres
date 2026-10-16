@@ -12,6 +12,6 @@ slot_type = 4
 main_mesh = ExtResource("1_gmh7v")
 move_speed_bonus = 0.3
 attack_animation = &"skeleton/Melee_Unarmed_Attack_Punch_A"
-attack_animations = Array[StringName]([&"skeleton/Melee_Unarmed_Attack_Punch_A", &"skeleton/Melee_Unarmed_Attack_Kick"])
+attack_animations = Array[StringName]([&"skeleton/Melee_Unarmed_Attack_Punch_A", &"skeleton/Melee_Unarmed_Attack_Punch_B", &"skeleton/Melee_Unarmed_Attack_Kick"])
 attack_cooldown = 0.4
 weapon_damage = 14.0

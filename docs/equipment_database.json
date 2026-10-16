@@ -373,10 +373,11 @@
       "move_speed_bonus": 0.0,
       "weapon_damage": 18.0,
       "attack_cooldown": 0.5,
-      "attack_animation": "skeleton/Melee_1H_Attack_Slice_Horizontal",
+      "attack_animation": "skeleton/Melee_1H_Attack_Slice_Diagonal",
       "attack_animations": [
-        "skeleton/Melee_1H_Attack_Slice_Horizontal",
         "skeleton/Melee_1H_Attack_Slice_Diagonal",
+        "skeleton/Melee_1H_Attack_Slice_Diagonal_Reverse",
+        "skeleton/Melee_1H_Attack_Slice_Horizontal",
         "skeleton/Melee_1H_Attack_Stab"
       ]
     },
@@ -393,11 +394,11 @@
       "health_bonus": 0.0,
       "move_speed_bonus": 0.0,
       "weapon_damage": 22.0,
-      "attack_cooldown": 0.6,
+      "attack_cooldown": 0.5,
       "attack_animation": "skeleton/Melee_1H_Attack_Slice_Diagonal",
       "attack_animations": [
         "skeleton/Melee_1H_Attack_Slice_Diagonal",
-        "skeleton/Melee_1H_Attack_Chop",
+        "skeleton/Melee_1H_Attack_Slice_Diagonal_Reverse",
         "skeleton/Melee_1H_Attack_Slice_Horizontal"
       ]
     },

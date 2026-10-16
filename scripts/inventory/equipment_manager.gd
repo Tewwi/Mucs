@@ -516,26 +516,76 @@ func _update_weapon_hitbox_shape(item: EquipmentData) -> void:
 		col.position = Vector3(0.0, 0.2, 0.0)
 
 
-## Bật Hitbox gây sát thương khi vung kiếm
+## Lấy hoặc tạo Hitbox3D cho tay trái (đấm tay không hoặc vũ khí tay trái)
+func get_or_create_left_hand_hitbox() -> Hitbox3D:
+	var attach := _get_or_create_bone_attachment("hand.l", "LeftHandAttachment")
+	if not attach:
+		return null
+		
+	var mesh_node: MeshInstance3D = attach.get_node_or_null("WeaponMesh") as MeshInstance3D
+	if not mesh_node:
+		mesh_node = MeshInstance3D.new()
+		mesh_node.name = "WeaponMesh"
+		attach.add_child(mesh_node)
+		
+	var hitbox: Hitbox3D = mesh_node.get_node_or_null("WeaponHitbox") as Hitbox3D
+	if not hitbox:
+		hitbox = Hitbox3D.new()
+		hitbox.name = "WeaponHitbox"
+		hitbox.target_group = "enemy"
+		hitbox.owner_character = get_parent() as Node3D
+		hitbox.collision_layer = 0
+		hitbox.collision_mask = 0xFFFFFFFF
+		
+		var col := CollisionShape3D.new()
+		col.name = "CollisionShape3D"
+		var shape := BoxShape3D.new()
+		shape.size = Vector3(0.5, 0.6, 0.5)
+		col.position = Vector3(0.0, 0.2, 0.0)
+		col.shape = shape
+		hitbox.add_child(col)
+		mesh_node.add_child(hitbox)
+		
+	return hitbox
+
+
+## Bật Hitbox gây sát thương khi vung kiếm / đấm
 func enable_weapon_hitbox(damage: float = -1.0) -> void:
-	var hitbox := get_or_create_weapon_hitbox()
-	if hitbox:
-		if damage <= 0.0:
-			damage = get_total_weapon_damage()
-		hitbox.start_hit(damage)
+	if damage <= 0.0:
+		damage = get_total_weapon_damage()
+
+	var r_hitbox := get_or_create_weapon_hitbox()
+	if r_hitbox:
+		r_hitbox.start_hit(damage)
+
+	# Bật hitbox tay trái khi đấm tay không hoặc cầm vũ khí tay trái
+	var l_hitbox := get_or_create_left_hand_hitbox()
+	if l_hitbox:
+		l_hitbox.start_hit(damage)
 
 
-## Tắt Hitbox khi kết thúc vung kiếm
+## Tắt Hitbox khi kết thúc vung kiếm / đấm
 func disable_weapon_hitbox() -> void:
 	if not skeleton:
 		return
-	var attach: BoneAttachment3D = skeleton.get_node_or_null("RightHandAttachment") as BoneAttachment3D
-	if attach:
-		var mesh_node := attach.get_node_or_null("WeaponMesh")
+	var r_attach: BoneAttachment3D = skeleton.get_node_or_null("RightHandAttachment") as BoneAttachment3D
+	if r_attach:
+		var mesh_node := r_attach.get_node_or_null("WeaponMesh")
 		var hitbox: Hitbox3D = null
 		if mesh_node:
 			hitbox = mesh_node.get_node_or_null("WeaponHitbox") as Hitbox3D
 		if not hitbox:
-			hitbox = attach.get_node_or_null("WeaponHitbox") as Hitbox3D
+			hitbox = r_attach.get_node_or_null("WeaponHitbox") as Hitbox3D
+		if hitbox:
+			hitbox.end_hit()
+
+	var l_attach: BoneAttachment3D = skeleton.get_node_or_null("LeftHandAttachment") as BoneAttachment3D
+	if l_attach:
+		var mesh_node := l_attach.get_node_or_null("WeaponMesh")
+		var hitbox: Hitbox3D = null
+		if mesh_node:
+			hitbox = mesh_node.get_node_or_null("WeaponHitbox") as Hitbox3D
+		if not hitbox:
+			hitbox = l_attach.get_node_or_null("WeaponHitbox") as Hitbox3D
 		if hitbox:
 			hitbox.end_hit()
